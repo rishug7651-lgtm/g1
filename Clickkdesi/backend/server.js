@@ -32,6 +32,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "https://g1-1-ph8w.onrender.com",
       "https://e-commerce-1-ot1x.onrender.com",
       "*",
     ],
