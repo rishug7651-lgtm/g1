@@ -5,7 +5,7 @@ import Product from "../models/Product.js";
 dotenv.config();
 
 const BACKEND_URL =
-  (process.env.PUBLIC_BACKEND_URL || "https://e-commerce-t99l.onrender.com")
+  (process.env.PUBLIC_BACKEND_URL || "https://g1-x5ol.onrender.com")
     .replace(/\/$/, "");
 const BASE_URL = `${BACKEND_URL}/photos`;
 
