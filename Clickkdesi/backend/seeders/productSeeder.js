@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
 import dotenv from "dotenv";
 import Product from "../models/Product.js";
+import { connectDB, disconnectDB } from "../config/db.js";
 
 dotenv.config();
 
@@ -130,8 +130,7 @@ const products = [
 
 const seedProducts = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDB connected");
+    await connectDB({ label: "MongoDB seed" });
 
     const result = await Product.bulkWrite(
       products.map((product) => ({
@@ -150,10 +149,11 @@ const seedProducts = async () => {
       inserted: result.upsertedCount,
     });
 
-    await mongoose.disconnect();
+    await disconnectDB();
     process.exit();
   } catch (error) {
-    console.error(error);
+    console.error("Product seed failed");
+    console.error(error.message || error);
     process.exit(1);
   }
 };

@@ -2,10 +2,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import { connectDB } from "./config/db.js";
 import "./utils/sheetRetryWorker.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
@@ -85,8 +85,7 @@ app.use((err, req, res, next) => {
 /* ================= START ================= */
 const startServer = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ MongoDB Connected");
+    await connectDB({ label: "MongoDB" });
 
     app.listen(PORT, () => {
       console.log(`🚀 Server Running on ${PORT}`);
