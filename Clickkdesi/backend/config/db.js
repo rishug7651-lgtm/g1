@@ -51,27 +51,12 @@ const buildDirectAtlasUri = (uri) => {
   const params = new URLSearchParams(parsed.search);
   params.set("tls", "true");
   params.set("authSource", "admin");
-  params.set("directConnection", "true");
+  params.delete("directConnection");
+  params.set("readPreference", "primary");
   params.set("retryWrites", params.get("retryWrites") || "true");
   params.set("w", params.get("w") || "majority");
 
   return `mongodb://${parsed.username}:${parsed.password}@${fallback.directHost}${parsed.pathname}?${params.toString()}`;
-};
-
-const getConnectionUri = (uri) => {
-  const directUri = buildDirectAtlasUri(uri);
-
-  if (directUri) {
-    return {
-      uri: directUri,
-      usingFallback: true,
-    };
-  }
-
-  return {
-    uri,
-    usingFallback: false,
-  };
 };
 
 const getMongoHint = (error) => {
@@ -86,7 +71,7 @@ const getMongoHint = (error) => {
   }
 
   if (message.includes("not primary")) {
-    return "The direct Atlas fallback reached a secondary node. Run the MongoDB hello check and update the fallback host to the current primary.";
+    return "MongoDB is reporting that the selected server is not the primary. Use the normal mongodb+srv Atlas URI so the driver can discover the current primary, and avoid directConnection=true for production writes.";
   }
 
   if (
@@ -164,13 +149,7 @@ export const connectDB = async ({ label = "MongoDB", logTarget = true } = {}) =>
   }
 
   try {
-    const connection = getConnectionUri(diagnostics.uri);
-
-    if (connection.usingFallback) {
-      console.log("Using direct Atlas single-host connection to bypass SRV/replica-set DNS discovery.");
-    }
-
-    await mongoose.connect(connection.uri, {
+    await mongoose.connect(diagnostics.uri, {
       serverSelectionTimeoutMS: 10000,
       connectTimeoutMS: 10000,
     });
