@@ -9,37 +9,87 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const normalizePrivateKey = (value) => String(value || "").replace(/\\n/g, "\n");
+
+const parseGoogleServiceAccountJson = (value, sourceName) => {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    throw new Error(`${sourceName} is not valid JSON: ${error.message}`);
+  }
+};
+
 const loadGoogleCredentials = () => {
   if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-    return JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+    return parseGoogleServiceAccountJson(
+      process.env.GOOGLE_SERVICE_ACCOUNT_JSON,
+      "GOOGLE_SERVICE_ACCOUNT_JSON"
+    );
   }
 
-  return JSON.parse(
-    fs.readFileSync(
-      path.join(__dirname, "../config/google.json"),
-      "utf8"
-    )
+  if (process.env.GOOGLE_SERVICE_ACCOUNT?.trim().startsWith("{")) {
+    return parseGoogleServiceAccountJson(
+      process.env.GOOGLE_SERVICE_ACCOUNT,
+      "GOOGLE_SERVICE_ACCOUNT"
+    );
+  }
+
+  if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+    return {
+      type: "service_account",
+      project_id:
+        process.env.GOOGLE_PROJECT_ID ||
+        process.env.GOOGLE_SERVICE_ACCOUNT ||
+        undefined,
+      client_email: process.env.GOOGLE_CLIENT_EMAIL,
+      private_key: normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY),
+    };
+  }
+
+  const credentialsPath = path.join(__dirname, "../config/google.json");
+
+  if (!fs.existsSync(credentialsPath)) {
+    throw new Error(
+      "Google Sheets credentials missing. Set GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_CLIENT_EMAIL + GOOGLE_PRIVATE_KEY, or restore backend/config/google.json locally."
+    );
+  }
+
+  return parseGoogleServiceAccountJson(
+    fs.readFileSync(credentialsPath, "utf8"),
+    "backend/config/google.json"
   );
 };
 
-const credentials = loadGoogleCredentials();
-
-const auth = new google.auth.GoogleAuth({
-  credentials,
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});
-
-const sheets = google.sheets({
-  version: "v4",
-  auth,
-});
-
-const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET_NAME = "Sheet1";
 const SHEET_ID_RANGE = `'${SHEET_NAME}'!A2:A`;
 const SHEET_DATA_RANGE = `'${SHEET_NAME}'!A:L`;
 const sheetSaveLocks = new Map();
 let sheetIdPromise;
+let sheetsClient;
+
+const getSpreadsheetId = () => {
+  if (!process.env.GOOGLE_SHEET_ID) {
+    throw new Error("GOOGLE_SHEET_ID is missing.");
+  }
+
+  return process.env.GOOGLE_SHEET_ID;
+};
+
+const getSheetsClient = () => {
+  if (!sheetsClient) {
+    const auth = new google.auth.GoogleAuth({
+      credentials: loadGoogleCredentials(),
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+
+    sheetsClient = google.sheets({
+      version: "v4",
+      auth,
+    });
+  }
+
+  return sheetsClient;
+};
 
 /* ================= NORMALIZE ================= */
 
@@ -89,8 +139,10 @@ const createRow = (order) => [
 /* ================= FIND ROW ================= */
 
 const findRowIndexes = async (orderId) => {
+  const sheets = getSheetsClient();
+
   const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
+    spreadsheetId: getSpreadsheetId(),
     range: SHEET_ID_RANGE,
   });
 
@@ -109,9 +161,11 @@ const findRowIndexes = async (orderId) => {
 
 const getSheetId = async () => {
   if (!sheetIdPromise) {
+    const sheets = getSheetsClient();
+
     sheetIdPromise = sheets.spreadsheets
       .get({
-        spreadsheetId: SPREADSHEET_ID,
+        spreadsheetId: getSpreadsheetId(),
         fields: "sheets(properties(sheetId,title))",
       })
       .then((res) => {
@@ -137,6 +191,7 @@ const getSheetId = async () => {
 const deleteDuplicateRows = async (rowIndexes) => {
   if (!rowIndexes.length) return;
 
+  const sheets = getSheetsClient();
   const sheetId = await getSheetId();
   const requests = [...rowIndexes]
     .sort((a, b) => b - a)
@@ -152,7 +207,7 @@ const deleteDuplicateRows = async (rowIndexes) => {
     }));
 
   await sheets.spreadsheets.batchUpdate({
-    spreadsheetId: SPREADSHEET_ID,
+    spreadsheetId: getSpreadsheetId(),
     requestBody: { requests },
   });
 };
@@ -189,9 +244,10 @@ const saveOrderToSheetOnce = async (order, orderId) => {
 
     if (rowIndex !== -1) {
       /* ================= UPDATE ================= */
+      const sheets = getSheetsClient();
 
       await sheets.spreadsheets.values.update({
-        spreadsheetId: SPREADSHEET_ID,
+        spreadsheetId: getSpreadsheetId(),
         range: `'${SHEET_NAME}'!A${rowIndex}:L${rowIndex}`,
         valueInputOption: "USER_ENTERED",
         requestBody: {
@@ -202,9 +258,10 @@ const saveOrderToSheetOnce = async (order, orderId) => {
       console.log(`♻️ Updated row ${rowIndex}`);
     } else {
       /* ================= APPEND ================= */
+      const sheets = getSheetsClient();
 
       await sheets.spreadsheets.values.append({
-        spreadsheetId: SPREADSHEET_ID,
+        spreadsheetId: getSpreadsheetId(),
         range: SHEET_DATA_RANGE,
         valueInputOption: "USER_ENTERED",
         insertDataOption: "INSERT_ROWS",
