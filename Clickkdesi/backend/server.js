@@ -26,6 +26,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "https://g1-1-ph8w.onrender.com",
   "https://e-commerce-1-ot1x.onrender.com",
+  "https://s4-zdqq.onrender.com",
 ];
 const allowedOrigins = new Set(
   (process.env.CORS_ORIGINS || DEFAULT_ALLOWED_ORIGINS.join(","))

@@ -5,7 +5,7 @@ import { connectDB, disconnectDB } from "../config/db.js";
 dotenv.config();
 
 const BACKEND_URL =
-  (process.env.PUBLIC_BACKEND_URL || "https://g1-x5ol.onrender.com")
+  (process.env.PUBLIC_BACKEND_URL || "https://s4-backend-uyvz.onrender.com")
     .replace(/\/$/, "");
 const BASE_URL = `${BACKEND_URL}/photos`;
 
