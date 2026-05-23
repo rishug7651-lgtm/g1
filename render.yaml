@@ -43,7 +43,7 @@ services:
       - key: SHEET_RETRY_ENABLED
         value: true
       - key: CLOUDINARY_CLOUD_NAME
-        sync: false
+        value: dje6kqbmm
       - key: CORS_ORIGINS
         value: https://s4-zdqq.onrender.com
       - key: PUBLIC_FRONTEND_URL
@@ -74,6 +74,6 @@ services:
       - key: VITE_PUBLIC_BACKEND_URL
         value: https://s4-backend-uyvz.onrender.com
       - key: VITE_CLOUDINARY_CLOUD_NAME
-        sync: false
+        value: dje6kqbmm
       - key: VITE_RAZORPAY_KEY
         sync: false

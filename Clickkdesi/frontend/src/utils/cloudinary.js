@@ -1,4 +1,6 @@
-const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
+const DEFAULT_CLOUDINARY_CLOUD_NAME = "dje6kqbmm";
+const CLOUD_NAME =
+  import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || DEFAULT_CLOUDINARY_CLOUD_NAME;
 
 export const siteMediaPublicIds = {
   logo: "clickkdesi/site/logo",
