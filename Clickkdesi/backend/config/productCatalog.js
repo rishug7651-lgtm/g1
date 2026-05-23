@@ -1,32 +1,22 @@
-export const PRODUCT_MEDIA_FOLDER = "clickkdesi/products";
-export const SITE_MEDIA_FOLDER = "clickkdesi/site";
-export const VIDEO_MEDIA_FOLDER = "clickkdesi/video";
+import {
+  PRODUCT_MEDIA_FOLDER,
+  SITE_MEDIA_FOLDER,
+  VIDEO_MEDIA_FOLDER,
+  legacyPhotoPublicIds,
+  productMediaPublicId,
+  siteMediaPublicIds,
+  videoMediaPublicIds,
+} from "../../shared/cloudinaryConfig.js";
 
-export const productMediaPublicId = (name) =>
-  `${PRODUCT_MEDIA_FOLDER}/${name.replace(/\.[^.]+$/, "")}`;
-
-export const siteMediaPublicIds = {
-  logo: `${SITE_MEDIA_FOLDER}/logo`,
-  categoryFullSleeves: `${SITE_MEDIA_FOLDER}/category-full-sleeves`,
-  categorySleeveless: `${SITE_MEDIA_FOLDER}/category-sleeveless`,
-  sizeChart: `${SITE_MEDIA_FOLDER}/size-chart`,
+export {
+  PRODUCT_MEDIA_FOLDER,
+  SITE_MEDIA_FOLDER,
+  VIDEO_MEDIA_FOLDER,
+  legacyPhotoPublicIds,
+  productMediaPublicId,
+  siteMediaPublicIds,
+  videoMediaPublicIds,
 };
-
-export const videoMediaPublicIds = {
-  homepage: `${VIDEO_MEDIA_FOLDER}/homepage`,
-};
-
-export const legacyPhotoPublicIds = {
-  "c1.jpg": siteMediaPublicIds.categoryFullSleeves,
-  "c2.jpg": siteMediaPublicIds.categorySleeveless,
-  "logo.jpg": siteMediaPublicIds.logo,
-  "sc.jpg": siteMediaPublicIds.sizeChart,
-  "sc.jpeg": siteMediaPublicIds.sizeChart,
-};
-
-for (let i = 1; i <= 20; i += 1) {
-  legacyPhotoPublicIds[`p${i}.jpg`] = productMediaPublicId(`p${i}.jpg`);
-}
 
 const commonDescription = `
 - Made with 100% cotton

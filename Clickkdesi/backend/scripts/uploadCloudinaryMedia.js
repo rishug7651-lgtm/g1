@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import {
   legacyPhotoPublicIds,
   videoMediaPublicIds,
-} from "../config/productCatalog.js";
+} from "../../shared/cloudinaryConfig.js";
 
 dotenv.config();
 
