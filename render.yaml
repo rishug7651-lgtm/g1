@@ -45,11 +45,11 @@ services:
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CORS_ORIGINS
-        sync: false
+        value: https://s4-zdqq.onrender.com
       - key: PUBLIC_FRONTEND_URL
-        sync: false
+        value: https://s4-zdqq.onrender.com
       - key: PUBLIC_BACKEND_URL
-        sync: false
+        value: https://s4-backend-uyvz.onrender.com
 
   - type: web
     name: clickkdesi-frontend
@@ -70,9 +70,9 @@ services:
         value: public, max-age=300
     envVars:
       - key: VITE_API_BASE_URL
-        sync: false
+        value: https://s4-backend-uyvz.onrender.com/api
       - key: VITE_PUBLIC_BACKEND_URL
-        sync: false
+        value: https://s4-backend-uyvz.onrender.com
       - key: VITE_CLOUDINARY_CLOUD_NAME
         sync: false
       - key: VITE_RAZORPAY_KEY

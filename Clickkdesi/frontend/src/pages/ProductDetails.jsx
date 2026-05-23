@@ -8,8 +8,12 @@ import {
   siteMediaPublicIds,
 } from "../utils/cloudinary";
 
+const LOCAL_BACKEND_URL = "http://localhost:5000";
+const PRODUCTION_BACKEND_URL = "https://s4-backend-uyvz.onrender.com";
+
 const shareBaseURL = (
-  import.meta.env.VITE_PUBLIC_BACKEND_URL || "http://localhost:5000"
+  import.meta.env.VITE_PUBLIC_BACKEND_URL ||
+  (import.meta.env.DEV ? LOCAL_BACKEND_URL : PRODUCTION_BACKEND_URL)
 ).replace(/\/$/, "");
 
 export default function ProductDetails() {
