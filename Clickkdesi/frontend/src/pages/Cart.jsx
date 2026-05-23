@@ -1,5 +1,7 @@
 import { useCart } from "../context/CartContext";
 import { Link } from "react-router-dom";
+import ResponsiveImage from "../components/ResponsiveImage";
+import { getPublicIdFromLegacySrc } from "../utils/cloudinary";
 
 export default function Cart() {
 
@@ -42,11 +44,14 @@ export default function Cart() {
           {/* PRODUCT */}
           <div className="flex gap-4 items-center">
 
-            <img
-              src={item.image || "/placeholder.png"} // ✅ fallback image
+            <ResponsiveImage
+              publicId={item.imagePublicId || getPublicIdFromLegacySrc(item.image)}
+              src={item.image}
               alt={item.name}
               width="90"
-              className="rounded-lg"
+              sizes="90px"
+              widths={[120, 180]}
+              className="rounded-lg w-[90px] h-[120px] object-cover"
             />
 
             <div>

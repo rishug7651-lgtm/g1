@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API from "../api/axios";
 import { useCart } from "../context/CartContext";
-import emailjs from "@emailjs/browser";
+import { loadRazorpayCheckout } from "../utils/loadRazorpay";
 
 export default function Payment() {
   const { orderId } = useParams();
@@ -35,58 +35,21 @@ export default function Payment() {
     };
   }, [orderId, navigate]);
 
-  const buildOrderItemsHTML = (products = []) => {
-    if (!products.length) return "<p>No items found</p>";
-
-    return products
-      .map(
-        (product) => `
-      <table style="width:100%;margin-top:12px;border-bottom:1px solid #eee">
-        <tr>
-          <td>
-            <strong>${product.name || ""}</strong><br/>
-            Qty: ${product.quantity || 1}
-            ${product.size ? `<br/>Size: ${product.size}` : ""}
-          </td>
-          <td style="text-align:right">Rs. ${product.price || 0}</td>
-        </tr>
-      </table>
-    `
-      )
-      .join("");
-  };
-
-  const sendConfirmationMail = async (order) => {
-    try {
-      const customerEmail = order?.shippingAddress?.email;
-      const customerName = order?.shippingAddress?.name;
-
-      if (!customerEmail) {
-        console.log("Customer email missing");
-        return;
-      }
-
-      await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE,
-        import.meta.env.VITE_EMAILJS_TEMPLATE,
-        {
-          name: customerName,
-          email: customerEmail,
-          order_id: orderId,
-          amount: order.totalAmount,
-          order_items: buildOrderItemsHTML(order.products),
-        },
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      );
-    } catch (err) {
-      console.log("Email Error:", err);
-    }
-  };
-
-  const payNow = () => {
+  const payNow = async () => {
     if (!paymentData || processing) return;
 
     setProcessing(true);
+
+    let RazorpayCheckout;
+
+    try {
+      RazorpayCheckout = await loadRazorpayCheckout();
+    } catch (err) {
+      console.log(err);
+      alert("Payment checkout failed to load");
+      setProcessing(false);
+      return;
+    }
 
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY,
@@ -104,7 +67,6 @@ export default function Payment() {
           });
 
           if (verify.data.success) {
-            await sendConfirmationMail(verify.data.order);
             clearCart();
             navigate("/success", { replace: true });
           }
@@ -128,7 +90,7 @@ export default function Payment() {
       },
     };
 
-    const rzp = new window.Razorpay(options);
+    const rzp = new RazorpayCheckout(options);
 
     rzp.on("payment.failed", () => {
       setProcessing(false);

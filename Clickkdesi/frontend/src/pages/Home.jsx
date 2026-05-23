@@ -3,6 +3,13 @@ import { getProducts } from "../api/products";
 
 import HeroCarousel from "../components/HeroCarousel";
 import ProductCard from "../components/ProductCard";
+import ResponsiveImage from "../components/ResponsiveImage";
+import {
+  getCloudinaryVideoUrl,
+  productMediaPublicId,
+  siteMediaPublicIds,
+  videoMediaPublicIds,
+} from "../utils/cloudinary";
 
 import { Link } from "react-router-dom";
 
@@ -26,8 +33,8 @@ function DiscountBanner() {
 function Categories() {
 
   const categories = [
-    { name: "Full Sleeves", img: "/photos/c1.jpg" },
-    { name: "Sleeveless", img: "/photos/c2.jpg" }
+    { name: "Full Sleeves", publicId: siteMediaPublicIds.categoryFullSleeves },
+    { name: "Sleeveless", publicId: siteMediaPublicIds.categorySleeveless }
   ];
 
   return (
@@ -54,11 +61,12 @@ function Categories() {
             "
           >
 
-            <img
-              src={cat.img}
+            <ResponsiveImage
+              publicId={cat.publicId}
               alt={cat.name}
               loading="lazy"
-              decoding="async"
+              sizes="(max-width: 640px) 100vw, 50vw"
+              widths={[480, 640, 800, 1000]}
               className="
                 w-full h-full object-cover
                 group-hover:scale-110
@@ -131,6 +139,9 @@ function Products({ products }) {
 /* ================= VIDEO ================= */
 
 function FashionVideo() {
+  const [active, setActive] = useState(false);
+  const videoUrl = getCloudinaryVideoUrl(videoMediaPublicIds.homepage);
+
   return (
     <section className="px-4 sm:px-8 lg:px-12 py-20">
 
@@ -144,20 +155,43 @@ function FashionVideo() {
         shadow-2xl
       ">
 
-        <video
-          controls
-          muted
-          playsInline
-          preload="none"
-          poster="/photos/p1.jpg"
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="/video/v2.mp4" type="video/mp4"/>
-        </video>
+        {active && videoUrl ? (
+          <video
+            controls
+            autoPlay
+            muted
+            playsInline
+            preload="metadata"
+            poster=""
+            className="absolute inset-0 w-full h-full object-cover"
+          >
+            <source src={videoUrl} type="video/mp4"/>
+          </video>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setActive(true)}
+            className="absolute inset-0 block w-full h-full text-left"
+            aria-label="Play fashion video"
+          >
+            <ResponsiveImage
+              publicId={productMediaPublicId("p1.jpg")}
+              alt="Fashion video preview"
+              className="w-full h-full object-cover"
+              sizes="100vw"
+              widths={[640, 960, 1280]}
+            />
+            <span className="absolute inset-0 flex items-center justify-center">
+              <span className="rounded-full bg-white/90 px-6 py-3 font-semibold text-pink-600 shadow-xl">
+                Play
+              </span>
+            </span>
+          </button>
+        )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"/>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none"/>
 
-        <div className="absolute bottom-8 left-8 text-white">
+        <div className="absolute bottom-8 left-8 text-white pointer-events-none">
           <h2 className="text-xl sm:text-4xl font-bold">
             Confidence in Every Style
           </h2>
@@ -174,10 +208,10 @@ function FashionVideo() {
 function GalleryCarousel() {
 
   const images = [
-    "/photos/p1.jpg",
-    "/photos/p2.jpg",
-    "/photos/p3.jpg",
-    "/photos/p4.jpg"
+    productMediaPublicId("p1.jpg"),
+    productMediaPublicId("p2.jpg"),
+    productMediaPublicId("p3.jpg"),
+    productMediaPublicId("p4.jpg")
   ];
 
   return (
@@ -203,11 +237,12 @@ function GalleryCarousel() {
         {images.map((img,i)=>(
           <SwiperSlide key={i}>
             <div className="h-[280px] sm:h-[360px] rounded-3xl overflow-hidden shadow-xl">
-              <img
-                src={img}
+              <ResponsiveImage
+                publicId={img}
                 alt="Style inspiration"
                 loading="lazy"
-                decoding="async"
+                sizes="(max-width: 640px) 85vw, (max-width: 1024px) 50vw, 33vw"
+                widths={[360, 520, 720, 960]}
                 className="w-full h-full object-cover hover:scale-110 transition duration-700"
               />
             </div>

@@ -20,10 +20,19 @@ const productSchema = new mongoose.Schema({
 
   hoverImage: String,
 
+  imagePublicId: String,
+
+  hoverImagePublicId: String,
+
+  imageAlt: String,
+
   description: String,
 
   category: String
 },
 { timestamps: true });
+
+productSchema.index({ category: 1, createdAt: -1, _id: -1 });
+productSchema.index({ updatedAt: -1 });
 
 export default mongoose.model("Product", productSchema);

@@ -4,7 +4,7 @@ import {
   EmailParams,
   Sender,
   Recipient,
-  Attachment
+  Attachment,
 } from "mailersend";
 
 const mailerSend = new MailerSend({
@@ -12,49 +12,26 @@ const mailerSend = new MailerSend({
 });
 
 export const sendOrderMail = async (to, order, invoicePath) => {
+  const sentFrom = new Sender(
+    process.env.MAILERSEND_FROM_EMAIL || "test-q3enl6kd7qr42vwr.mlsender.net",
+    process.env.MAILERSEND_FROM_NAME || "Pankuri Store"
+  );
+  const recipients = [new Recipient(to)];
+  const invoiceBuffer = fs.readFileSync(invoicePath);
+  const attachments = [
+    new Attachment(invoiceBuffer.toString("base64"), "invoice.pdf"),
+  ];
+  const emailParams = new EmailParams()
+    .setFrom(sentFrom)
+    .setTo(recipients)
+    .setSubject("Order Confirmed")
+    .setHtml(`
+      <h2>Order Confirmed</h2>
+      <p>Hello ${order.shippingAddress.name}</p>
+      <p>Order ID: ${order._id}</p>
+      <p>Total: Rs. ${order.totalAmount}</p>
+    `)
+    .setAttachments(attachments);
 
-  try {
-
-    /* ✅ CORRECT SENDER DOMAIN */
-    const sentFrom = new Sender(
-      "test-q3enl6kd7qr42vwr.mlsender.net",
-      "Pankuri Store"
-    );
-
-    const recipients = [
-      new Recipient(to)
-    ];
-
-    const invoiceBuffer =
-      fs.readFileSync(invoicePath);
-
-    const attachments = [
-      new Attachment(
-        invoiceBuffer.toString("base64"),
-        "invoice.pdf"
-      )
-    ];
-
-    const emailParams = new EmailParams()
-      .setFrom(sentFrom)
-      .setTo(recipients)
-      .setSubject("Order Confirmed ✅")
-      .setHtml(`
-        <h2>Order Confirmed 🎉</h2>
-        <p>Hello ${order.shippingAddress.name}</p>
-        <p>Order ID: ${order._id}</p>
-        <p>Total: ₹${order.totalAmount}</p>
-      `)
-      .setAttachments(attachments);
-
-    const response =
-      await mailerSend.email.send(emailParams);
-
-    // console.log("✅ Email Sent:", response);
-
-  } catch (err) {
-
-    // console.log("🚨 FULL ERROR:");
-    // console.log(err);
-  }
+  return mailerSend.email.send(emailParams);
 };

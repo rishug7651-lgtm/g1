@@ -1,8 +1,6 @@
 import crypto from "crypto";
 import Order from "../models/Order.js";
-import { generateInvoice } from "../utils/generateInvoice.js";
-import { sendOrderMail } from "../utils/sendEmail.js";
-import { syncOrderToSheetOnce } from "../utils/sheetSync.js";
+import { fulfillPaidOrder } from "../services/orderFulfillment.js";
 
 export const razorpayWebhook = async (req, res) => {
   try {
@@ -26,61 +24,12 @@ export const razorpayWebhook = async (req, res) => {
 
     if (event === "payment.captured") {
       const payment = body.payload.payment.entity;
-      const paymentId = payment.id;
-      const razorpayOrderId = payment.order_id;
 
-      console.log("Payment Captured:", paymentId);
-
-      const order = await Order.findOne({
-        razorpayOrderId,
+      await fulfillPaidOrder({
+        razorpayOrderId: payment.order_id,
+        paymentId: payment.id,
+        source: "webhook-controller",
       });
-
-      if (!order) {
-        console.log("Order not found for webhook");
-        return res.status(200).json({ status: "ok" });
-      }
-
-      if (order.paymentStatus === "paid" && order.sheetSaved) {
-        console.log("Already fully processed");
-        return res.status(200).json({ status: "ok" });
-      }
-
-      if (order.paymentStatus !== "paid") {
-        order.paymentStatus = "paid";
-        order.orderStatus = "confirmed";
-        order.paymentId = paymentId;
-
-        await generateInvoice(order);
-        order.invoiceUrl = `/invoices/invoice-${order._id}.pdf`;
-
-        await order.save();
-        console.log("Order updated by webhook");
-      } else if (!order.paymentId) {
-        order.paymentId = paymentId;
-        await order.save();
-      }
-
-      if (!order.sheetSaved) {
-        const { saved: sheetSuccess, skipped } =
-          await syncOrderToSheetOnce(order._id);
-
-        if (skipped) {
-          console.log("Sheet sync skipped");
-        } else {
-          console.log("Sheet updated:", sheetSuccess);
-        }
-      }
-
-      try {
-        const invoicePath = `./invoices/invoice-${order._id}.pdf`;
-
-        await sendOrderMail(order.shippingAddress.email, order, invoicePath);
-        await sendOrderMail(process.env.ADMIN_EMAIL, order, invoicePath);
-
-        console.log("Emails sent");
-      } catch (err) {
-        console.log("Email failed:", err.message);
-      }
     } else if (event === "payment.failed") {
       const payment = body.payload.payment.entity;
 
@@ -88,10 +37,6 @@ export const razorpayWebhook = async (req, res) => {
         { razorpayOrderId: payment.order_id },
         { paymentStatus: "failed" }
       );
-
-      console.log("Payment failed updated");
-    } else {
-      console.log("Ignored event:", event);
     }
 
     return res.status(200).json({ status: "ok" });

@@ -81,6 +81,14 @@ sheetSaveInProgress: {
 
 sheetSaveStartedAt: Date,
 
+confirmationEmailSentAt: Date,
+
+adminEmailSentAt: Date,
+
 }, { timestamps: true });
+
+orderSchema.index({ createdAt: -1 });
+orderSchema.index({ razorpayOrderId: 1 });
+orderSchema.index({ paymentStatus: 1, sheetSaved: 1, paymentId: 1, updatedAt: 1 });
 
 export default mongoose.model("Order", orderSchema);

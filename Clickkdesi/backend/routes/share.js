@@ -1,6 +1,8 @@
 import express from "express";
 import Product from "../models/Product.js";
 import { publicCache } from "../middleware/responseOptimization.js";
+import { legacyPhotoPublicIds } from "../config/productCatalog.js";
+import { getCloudinaryImageUrl } from "../utils/cloudinaryMedia.js";
 
 const router = express.Router();
 
@@ -11,7 +13,6 @@ const backendURL = (process.env.PUBLIC_BACKEND_URL || "https://g1-x5ol.onrender.
 const frontendURL = (
   process.env.PUBLIC_FRONTEND_URL || "https://e-commerce-1-ot1x.onrender.com"
 ).replace(/\/$/, "");
-const assetBaseURL = (process.env.PUBLIC_ASSET_BASE_URL || backendURL).replace(/\/$/, "");
 
 const escapeHtml = (value) =>
   String(value || "")
@@ -27,36 +28,36 @@ const cleanText = (value, fallback = "") =>
     .replace(/\s+/g, " ")
     .trim();
 
-const normalizeImageUrl = (url) => {
+const getPublicIdFromLegacyUrl = (url) => {
   if (!url) return "";
 
-  if (url.startsWith("/photos/")) {
-    return `${assetBaseURL}${url}`;
-  }
-
   try {
-    const parsed = new URL(url);
-    const photoMatch = parsed.pathname.match(/\/photos\/[^/?#]+$/);
-
-    if (photoMatch && process.env.PUBLIC_ASSET_BASE_URL) {
-      return `${assetBaseURL}${photoMatch[0]}`;
-    }
-
-    return url;
+    const parsed = new URL(url, "https://placeholder.local");
+    const fileName = parsed.pathname.split("/").pop();
+    return legacyPhotoPublicIds[fileName] || "";
   } catch {
-    return url;
+    return "";
   }
 };
 
 router.get("/:id", publicCache(60 * 10), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .select("name price image description")
+      .select("name price image imagePublicId description")
       .lean();
 
     if (!product) return res.status(404).send("Product not found");
 
-    const image = normalizeImageUrl(product.image) || "https://via.placeholder.com/1200x630";
+    const imagePublicId =
+      product.imagePublicId || getPublicIdFromLegacyUrl(product.image);
+    const image =
+      getCloudinaryImageUrl(imagePublicId, {
+        width: 1200,
+        height: 630,
+        crop: "fill",
+      }) ||
+      product.image ||
+      "https://via.placeholder.com/1200x630";
     const description = cleanText(product.description, "Best product available").slice(0, 160);
     const name = cleanText(`${product.name} - Premium Cotton Wear for Daily Comfort`);
     const productUrl = `${frontendURL}/product/${product._id}`;

@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
 import { useState } from "react";
+import ResponsiveImage from "./ResponsiveImage";
+import { getPublicIdFromLegacySrc } from "../utils/cloudinary";
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
@@ -10,14 +12,18 @@ export default function ProductCard({ product }) {
 
   if (!product) return null;
 
-  const mainImage = product.image || "/photos/logo.jpg";
-  const hoverImage = product.hoverImage || mainImage;
+  const mainImagePublicId =
+    product.imagePublicId || getPublicIdFromLegacySrc(product.image);
+  const hoverImagePublicId =
+    product.hoverImagePublicId ||
+    getPublicIdFromLegacySrc(product.hoverImage) ||
+    mainImagePublicId;
   const discount =
     product.mrp &&
     Math.round(((product.mrp - product.price) / product.mrp) * 100);
 
   return (
-    <motion.div
+    <Motion.div
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       whileHover={{ y: -12 }}
@@ -34,7 +40,7 @@ export default function ProductCard({ product }) {
       />
 
       <Link to={`/product/${product._id}`}>
-        <motion.div
+        <Motion.div
           className="
             relative h-[380px]
             overflow-hidden
@@ -63,23 +69,29 @@ export default function ProductCard({ product }) {
             </div>
           )}
 
-          <motion.img
-            key={hover ? hoverImage : mainImage}
-            src={hover ? hoverImage : mainImage}
-            alt={product.name}
-            loading="lazy"
-            decoding="async"
+          <Motion.div
+            key={hover ? hoverImagePublicId : mainImagePublicId}
             className="w-full h-full object-cover"
             animate={{ scale: hover ? 1.1 : 1 }}
             transition={{ duration: 0.5 }}
-          />
+          >
+            <ResponsiveImage
+              publicId={hover ? hoverImagePublicId : mainImagePublicId}
+              src={hover ? product.hoverImage : product.image}
+              alt={product.imageAlt || product.name}
+              loading="lazy"
+              className="w-full h-full object-cover"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              widths={[320, 480, 640, 800]}
+            />
+          </Motion.div>
 
-          <motion.div
+          <Motion.div
             className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"
             animate={{ opacity: hover ? 1 : 0 }}
           />
 
-          <motion.div
+          <Motion.div
             className="absolute bottom-5 left-1/2 -translate-x-1/2"
             animate={{
               opacity: hover ? 1 : 0,
@@ -104,11 +116,11 @@ export default function ProductCard({ product }) {
               <ShoppingBag size={18} />
               Add To Cart
             </button>
-          </motion.div>
-        </motion.div>
+          </Motion.div>
+        </Motion.div>
       </Link>
 
-      <motion.div className="mt-5 text-center" animate={{ y: hover ? -4 : 0 }}>
+      <Motion.div className="mt-5 text-center" animate={{ y: hover ? -4 : 0 }}>
         <h3 className="font-semibold text-lg">{product.name}</h3>
 
         <p className="text-gray-500 text-sm">Premium Collection</p>
@@ -130,7 +142,7 @@ export default function ProductCard({ product }) {
             </div>
           )}
         </div>
-      </motion.div>
-    </motion.div>
+      </Motion.div>
+    </Motion.div>
   );
 }

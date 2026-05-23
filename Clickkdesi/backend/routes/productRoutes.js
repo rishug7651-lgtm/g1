@@ -1,13 +1,23 @@
+import crypto from "crypto";
 import express from "express";
 import Product from "../models/Product.js";
 import { publicCache } from "../middleware/responseOptimization.js";
+import { legacyPhotoPublicIds } from "../config/productCatalog.js";
+import { getCloudinaryImageUrl } from "../utils/cloudinaryMedia.js";
 
 const router = express.Router();
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 48;
-const LIST_FIELDS = "name price mrp image hoverImage category updatedAt";
-const DETAIL_FIELDS = "name price mrp image hoverImage description category updatedAt";
+const PRODUCT_LIST_TTL_SECONDS = Number(process.env.PRODUCT_LIST_TTL_SECONDS || 300);
+const PRODUCT_DETAIL_TTL_SECONDS = Number(process.env.PRODUCT_DETAIL_TTL_SECONDS || 600);
+const LIST_FIELDS =
+  "name price mrp image imagePublicId hoverImage hoverImagePublicId imageAlt category updatedAt";
+const DETAIL_FIELDS =
+  "name price mrp image imagePublicId hoverImage hoverImagePublicId imageAlt description category updatedAt";
+const ONRENDER_PHOTO_RE = /^https:\/\/[^/]+\.onrender\.com\/photos\//i;
+
+const responseCache = new Map();
 
 const backendURL = (process.env.PUBLIC_BACKEND_URL || "https://g1-x5ol.onrender.com").replace(
   /\/$/,
@@ -16,7 +26,6 @@ const backendURL = (process.env.PUBLIC_BACKEND_URL || "https://g1-x5ol.onrender.
 const frontendURL = (
   process.env.PUBLIC_FRONTEND_URL || "https://e-commerce-1-ot1x.onrender.com"
 ).replace(/\/$/, "");
-const assetBaseURL = (process.env.PUBLIC_ASSET_BASE_URL || backendURL).replace(/\/$/, "");
 
 const clampNumber = (value, fallback, min, max) => {
   const parsed = Number.parseInt(value, 10);
@@ -40,36 +49,98 @@ const escapeHtml = (value) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
-const normalizeImageUrl = (url) => {
+const inferPublicIdFromLegacyUrl = (url) => {
   if (!url) return "";
 
-  if (url.startsWith("/photos/")) {
-    return `${assetBaseURL}${url}`;
-  }
-
   try {
-    const parsed = new URL(url);
-    const photoMatch = parsed.pathname.match(/\/photos\/[^/?#]+$/);
-
-    if (photoMatch && process.env.PUBLIC_ASSET_BASE_URL) {
-      return `${assetBaseURL}${photoMatch[0]}`;
-    }
-
-    return url;
+    const parsed = new URL(url, "https://placeholder.local");
+    const fileName = parsed.pathname.split("/").pop();
+    return legacyPhotoPublicIds[fileName] || "";
   } catch {
-    return url;
+    return "";
   }
 };
 
-const serializeProduct = (product) => ({
-  ...product,
-  image: normalizeImageUrl(product.image),
-  hoverImage: normalizeImageUrl(product.hoverImage || product.image),
-});
+const stripRenderAssetUrl = (url) => {
+  if (!url || ONRENDER_PHOTO_RE.test(url)) return undefined;
+  return url;
+};
 
-/* =========================================================
-   Share / SEO route for social previews
-========================================================= */
+const serializeProduct = (product) => {
+  const imagePublicId =
+    product.imagePublicId || inferPublicIdFromLegacyUrl(product.image);
+  const hoverImagePublicId =
+    product.hoverImagePublicId ||
+    inferPublicIdFromLegacyUrl(product.hoverImage) ||
+    imagePublicId;
+
+  return {
+    ...product,
+    imagePublicId,
+    hoverImagePublicId,
+    imageAlt: product.imageAlt || product.name,
+    image: stripRenderAssetUrl(product.image),
+    hoverImage: stripRenderAssetUrl(product.hoverImage),
+  };
+};
+
+const etagFor = (payload) =>
+  `"${crypto.createHash("sha256").update(payload).digest("base64url").slice(0, 32)}"`;
+
+const sendCachedJson = async (req, res, key, ttlSeconds, producer) => {
+  const now = Date.now();
+  const cached = responseCache.get(key);
+
+  if (cached && cached.expiresAt > now) {
+    res.setHeader("ETag", cached.etag);
+    res.setHeader(
+      "Cache-Control",
+      `public, max-age=${ttlSeconds}, stale-while-revalidate=60`
+    );
+
+    if (req.headers["if-none-match"] === cached.etag) {
+      return res.status(304).end();
+    }
+
+    return res.type("json").send(cached.payload);
+  }
+
+  const value = await producer();
+
+  if (value === null) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  const payload = JSON.stringify(value);
+  const etag = etagFor(payload);
+
+  responseCache.set(key, {
+    payload,
+    etag,
+    expiresAt: now + ttlSeconds * 1000,
+  });
+
+  if (responseCache.size > 200) {
+    for (const [cacheKey, item] of responseCache.entries()) {
+      if (item.expiresAt <= now || responseCache.size > 200) {
+        responseCache.delete(cacheKey);
+      }
+    }
+  }
+
+  res.setHeader("ETag", etag);
+  res.setHeader(
+    "Cache-Control",
+    `public, max-age=${ttlSeconds}, stale-while-revalidate=60`
+  );
+
+  if (req.headers["if-none-match"] === etag) {
+    return res.status(304).end();
+  }
+
+  return res.type("json").send(payload);
+};
+
 router.get("/share/:id", publicCache(60 * 10), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
@@ -88,7 +159,14 @@ router.get("/share/:id", publicCache(60 * 10), async (req, res) => {
       safeProduct.description,
       "Best product available"
     ).slice(0, 160);
-    const image = safeProduct.image || "https://via.placeholder.com/1200x630";
+    const image =
+      getCloudinaryImageUrl(safeProduct.imagePublicId, {
+        width: 1200,
+        height: 630,
+        crop: "fill",
+      }) ||
+      safeProduct.image ||
+      "https://via.placeholder.com/1200x630";
     const productUrl = `${frontendURL}/product/${safeProduct._id}`;
     const shareUrl = `${backendURL}/api/products/share/${safeProduct._id}`;
 
@@ -113,7 +191,6 @@ router.get("/share/:id", publicCache(60 * 10), async (req, res) => {
   <meta property="og:url" content="${escapeHtml(shareUrl)}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:type" content="image/jpeg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${escapeHtml(name)}" />
   <meta name="twitter:description" content="${escapeHtml(description)}" />
@@ -129,59 +206,68 @@ router.get("/share/:id", publicCache(60 * 10), async (req, res) => {
   }
 });
 
-/* =========================================================
-   GET PRODUCTS - paginated and lightweight by default
-========================================================= */
-router.get("/", publicCache(60 * 5), async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const page = clampNumber(req.query.page, 1, 1, 1000);
     const limit = clampNumber(req.query.limit, DEFAULT_LIMIT, 1, MAX_LIMIT);
+    const category = String(req.query.category || "").trim();
     const skip = (page - 1) * limit;
     const query = {};
 
-    if (req.query.category) {
-      query.category = new RegExp(`^${String(req.query.category).trim()}$`, "i");
+    if (category) {
+      query.category = new RegExp(`^${category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
     }
 
-    const [products, total] = await Promise.all([
-      Product.find(query)
-        .select(LIST_FIELDS)
-        .sort({ createdAt: -1, _id: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Product.countDocuments(query),
-    ]);
+    await sendCachedJson(
+      req,
+      res,
+      `products:${category}:${page}:${limit}`,
+      PRODUCT_LIST_TTL_SECONDS,
+      async () => {
+        const [products, total] = await Promise.all([
+          Product.find(query)
+            .select(LIST_FIELDS)
+            .sort({ createdAt: -1, _id: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean(),
+          Product.countDocuments(query),
+        ]);
 
-    res.json({
-      products: products.map(serializeProduct),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.max(Math.ceil(total / limit), 1),
-      },
-    });
+        return {
+          products: products.map(serializeProduct),
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.max(Math.ceil(total / limit), 1),
+          },
+        };
+      }
+    );
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 });
 
-/* =========================================================
-   GET SINGLE PRODUCT
-========================================================= */
-router.get("/:id", publicCache(60 * 10), async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
-      .select(DETAIL_FIELDS)
-      .lean();
+    await sendCachedJson(
+      req,
+      res,
+      `product:${req.params.id}`,
+      PRODUCT_DETAIL_TTL_SECONDS,
+      async () => {
+        const product = await Product.findById(req.params.id)
+          .select(DETAIL_FIELDS)
+          .lean();
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+        if (!product) return null;
 
-    res.json(serializeProduct(product));
+        return serializeProduct(product);
+      }
+    );
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });

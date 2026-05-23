@@ -7,8 +7,8 @@ import crypto from "crypto";
 
 import Order from "../models/Order.js";
 import { verifyPayment } from "../controllers/paymentController.js";
-import { syncOrderToSheetOnce } from "../utils/sheetSync.js";
 import { noStore } from "../middleware/responseOptimization.js";
+import { fulfillPaidOrder } from "../services/orderFulfillment.js";
 
 const router = express.Router();
 
@@ -75,49 +75,15 @@ router.post(
       if (event === "payment.captured") {
         const payment = body.payload.payment.entity;
 
-        const order = await Order.findOne({
+        const { order } = await fulfillPaidOrder({
           razorpayOrderId: payment.order_id,
+          paymentId: payment.id,
+          source: "webhook",
         });
 
         if (!order) {
           console.log("Order not found");
           return res.json({ status: "ok" });
-        }
-
-        if (order.paymentStatus === "paid" && order.sheetSaved) {
-          console.log("Already processed");
-          return res.json({ status: "ok" });
-        }
-
-        let orderChanged = false;
-
-        if (order.paymentStatus !== "paid") {
-          order.paymentStatus = "paid";
-          order.orderStatus = "confirmed";
-          orderChanged = true;
-        }
-
-        if (!order.paymentId) {
-          order.paymentId = payment.id;
-          orderChanged = true;
-        }
-
-        if (orderChanged) {
-          await order.save();
-          console.log("Order marked paid");
-        }
-
-        if (!order.sheetSaved) {
-          const { saved: sheetSuccess, skipped } =
-            await syncOrderToSheetOnce(order._id);
-
-          if (skipped) {
-            console.log("Sheet sync skipped");
-          } else if (sheetSuccess) {
-            console.log("Sheet updated");
-          } else {
-            console.log("Sheet failed; retry worker will try again");
-          }
         }
       } else if (event === "payment.failed") {
         const payment = body.payload.payment.entity;

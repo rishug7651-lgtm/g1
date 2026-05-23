@@ -9,6 +9,8 @@ import {
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useState } from "react";
+import ResponsiveImage from "./ResponsiveImage";
+import { siteMediaPublicIds } from "../utils/cloudinary";
 
 export default function Navbar() {
 
@@ -49,9 +51,11 @@ export default function Navbar() {
           {/* ================= LOGO ================= */}
           <Link to="/" className="flex items-center gap-3">
 
-            <img
-              src="/photos/logo.jpg"
+            <ResponsiveImage
+              publicId={siteMediaPublicIds.logo}
               alt="Clickkdesi"
+              widths={[80, 120, 180]}
+              sizes="120px"
               className="
                 h-10 w-auto
                 object-contain

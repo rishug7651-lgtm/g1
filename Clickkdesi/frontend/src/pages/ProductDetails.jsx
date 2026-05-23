@@ -2,9 +2,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API from "../api/axios";
 import { useCart } from "../context/CartContext";
+import ResponsiveImage from "../components/ResponsiveImage";
+import {
+  getPublicIdFromLegacySrc,
+  siteMediaPublicIds,
+} from "../utils/cloudinary";
 
 const shareBaseURL = (
-  import.meta.env.VITE_PUBLIC_BACKEND_URL || "https://g1-x5ol.onrender.com"
+  import.meta.env.VITE_PUBLIC_BACKEND_URL || "http://localhost:5000"
 ).replace(/\/$/, "");
 
 export default function ProductDetails() {
@@ -100,11 +105,13 @@ export default function ProductDetails() {
         </div>
       )}
 
-      <img
-        src={product.image || "/photos/logo.jpg"}
-        alt={product.name}
+      <ResponsiveImage
+        publicId={product.imagePublicId || getPublicIdFromLegacySrc(product.image)}
+        src={product.image}
+        alt={product.imageAlt || product.name}
         loading="eager"
-        decoding="async"
+        sizes="(max-width: 768px) 100vw, 50vw"
+        widths={[480, 720, 960, 1200]}
         className="rounded-xl shadow-lg w-full"
       />
 
@@ -135,13 +142,13 @@ export default function ProductDetails() {
 
         <div className="mt-10">
           <h3 className="text-xl font-semibold mb-3">Size Chart</h3>
-          <img
-            src="/photos/sc.jpg"
+          <ResponsiveImage
+            publicId={siteMediaPublicIds.sizeChart}
             alt="Size Chart"
             loading="lazy"
-            decoding="async"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            widths={[480, 720, 960]}
             className="rounded-lg shadow-md border cursor-zoom-in hover:scale-105 transition"
-            onClick={() => window.open("/photos/sc.jpg", "_blank")}
           />
         </div>
       </div>

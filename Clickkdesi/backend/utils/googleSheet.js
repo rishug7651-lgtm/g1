@@ -9,12 +9,20 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const credentials = JSON.parse(
-  fs.readFileSync(
-    path.join(__dirname, "../config/google.json"),
-    "utf8"
-  )
-);
+const loadGoogleCredentials = () => {
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    return JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  }
+
+  return JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "../config/google.json"),
+      "utf8"
+    )
+  );
+};
+
+const credentials = loadGoogleCredentials();
 
 const auth = new google.auth.GoogleAuth({
   credentials,

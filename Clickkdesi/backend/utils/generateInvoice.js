@@ -13,6 +13,8 @@ export const generateInvoice = (order) => {
         `invoice-${order._id}.pdf`
       );
 
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
     const doc = new PDFDocument();
 
     const stream =

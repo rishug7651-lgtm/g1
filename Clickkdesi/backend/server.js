@@ -3,8 +3,6 @@ dotenv.config();
 
 import express from "express";
 import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
 
 import { connectDB } from "./config/db.js";
 
@@ -25,6 +23,9 @@ import {
 
 import { rateLimit } from "./middleware/rateLimit.js";
 import { requireAdminToken } from "./middleware/adminAuth.js";
+import { bandwidthLogger } from "./middleware/bandwidthLogger.js";
+import { legacyPhotoPublicIds } from "./config/productCatalog.js";
+import { getCloudinaryImageUrl } from "./utils/cloudinaryMedia.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -44,11 +45,6 @@ const allowedOrigins = new Set(
     .map((origin) => origin.trim())
     .filter(Boolean)
 );
-
-/* ================= PATH FIX ================= */
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /* ================= BASIC SECURITY ================= */
 
@@ -88,6 +84,10 @@ app.use(securityHeaders);
 
 app.use(compressionMiddleware);
 
+/* ================= BANDWIDTH LOGGING ================= */
+
+app.use(bandwidthLogger);
+
 /* ================= RATE LIMITERS ================= */
 
 const apiLimiter = rateLimit({
@@ -118,25 +118,26 @@ const photoLimiter = rateLimit({
 
 app.use("/product", shareLimiter, shareRouter);
 
-/* ================= STATIC FILES ================= */
+/* ================= LEGACY MEDIA REDIRECTS ================= */
 
-app.use(
-  "/photos",
-  photoLimiter,
-  express.static(path.join(__dirname, "photos"), {
-    etag: true,
-    immutable: true,
-    lastModified: true,
-    maxAge: "365d",
+app.get("/photos/:filename", photoLimiter, (req, res) => {
+  const publicId = legacyPhotoPublicIds[req.params.filename];
+  const redirectUrl = getCloudinaryImageUrl(publicId, {
+    width: 1200,
+    quality: "auto",
+    format: "auto",
+  });
 
-    setHeaders: (res) => {
-      res.setHeader(
-        "Cache-Control",
-        "public, max-age=31536000, immutable"
-      );
-    },
-  })
-);
+  if (!redirectUrl) {
+    return res.status(410).json({
+      success: false,
+      message: "Media moved to Cloudinary",
+    });
+  }
+
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  return res.redirect(301, redirectUrl);
+});
 
 /* ================= WEBHOOK ================= */
 

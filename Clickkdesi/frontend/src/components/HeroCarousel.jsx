@@ -5,7 +5,9 @@ import {
   Pagination
 } from "swiper/modules";
 
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
+import ResponsiveImage from "./ResponsiveImage";
+import { productMediaPublicId } from "../utils/cloudinary";
 
 import "swiper/css";
 import "swiper/css/effect-fade";
@@ -16,19 +18,19 @@ export default function HeroCarousel() {
   const slides = [
     {
       type: "image",
-      src: "/photos/p1.jpg",
+      publicId: productMediaPublicId("p1.jpg"),
       title: "Elegance Redefined",
       subtitle: "Designed for Modern Women"
     },
     {
       type: "image",
-      src: "/photos/p1.jpg",
+      publicId: productMediaPublicId("p1.jpg"),
       title: "Discover Your Style",
       subtitle: "Confidence in Every Outfit"
     },
     {
       type: "image",
-      src: "/photos/p3.jpg",
+      publicId: productMediaPublicId("p3.jpg"),
       title: "Clickkdesi Collection",
       subtitle: "Fashion That Speaks You"
     }
@@ -83,20 +85,24 @@ export default function HeroCarousel() {
                   <source src={slide.src} type="video/mp4"/>
                 </video>
               ) : (
-                <motion.img
-                  src={slide.src}
-                  alt={slide.title}
-                  loading={i === 0 ? "eager" : "lazy"}
-                  decoding="async"
+                <Motion.div
                   className="
                     absolute inset-0
                     w-full h-full
-                    object-cover
                   "
                   initial={{ scale: 1 }}
                   animate={{ scale: 1.08 }}
                   transition={{ duration: 8 }}
-                />
+                >
+                  <ResponsiveImage
+                    publicId={slide.publicId}
+                    alt={slide.title}
+                    loading={i === 0 ? "eager" : "lazy"}
+                    className="w-full h-full object-cover"
+                    sizes="100vw"
+                    widths={[640, 960, 1280, 1600]}
+                  />
+                </Motion.div>
               )}
 
               {/* DARK + PINK OVERLAY */}
@@ -116,7 +122,7 @@ export default function HeroCarousel() {
                 z-20
               ">
 
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, y: 60 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1 }}
@@ -159,7 +165,7 @@ export default function HeroCarousel() {
                     Shop Now
                   </button>
 
-                </motion.div>
+                </Motion.div>
 
               </div>
 
