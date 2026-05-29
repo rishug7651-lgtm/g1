@@ -29,6 +29,7 @@ import { getCloudinaryImageUrl } from "./utils/cloudinaryMedia.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const DEPLOYMENT_MARKER = "sheet-sync-credential-logs-2026-05-29";
 
 /* ================= ALLOWED ORIGINS ================= */
 
@@ -172,6 +173,8 @@ app.get("/healthz", (req, res) => {
   res.json({
     ok: true,
     message: "Server healthy",
+    deploymentMarker: DEPLOYMENT_MARKER,
+    gitCommit: process.env.RENDER_GIT_COMMIT || null,
   });
 });
 
