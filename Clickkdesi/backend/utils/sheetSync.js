@@ -24,7 +24,7 @@ const claimSheetSync = async (orderId) => {
         sheetSaveStartedAt: new Date(),
       },
     },
-    { new: true }
+    { returnDocument: "after" }
   );
 };
 

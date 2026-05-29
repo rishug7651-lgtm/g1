@@ -110,7 +110,11 @@ const fulfillPaidOrderOnce = async ({
         await order.save();
       }
     } catch (err) {
-      console.log("Confirmation email failed:", err.message);
+      console.log("Confirmation email failed:", {
+        message: err?.message || String(err),
+        code: err?.code,
+        status: err?.status,
+      });
     }
   }
 
