@@ -13,7 +13,10 @@ import orderRoutes from "./routes/orderRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import shareRouter from "./routes/share.js";
 
-import { saveOrderToSheet } from "./utils/googleSheet.js";
+import {
+  getGoogleSheetCredentialStatus,
+  saveOrderToSheet,
+} from "./utils/googleSheet.js";
 
 import {
   compressionMiddleware,
@@ -50,6 +53,7 @@ const getSheetConfigStatus = () => {
     adminApiTokenConfigured: Boolean(process.env.ADMIN_API_TOKEN),
     googleSheetIdConfigured: Boolean(process.env.GOOGLE_SHEET_ID),
     googleCredentialSource,
+    ...getGoogleSheetCredentialStatus(),
     legacyGoogleServiceAccountJsonIgnored: legacyServiceAccount.startsWith("{"),
     sheetRetryEnabled: process.env.SHEET_RETRY_ENABLED !== "false",
   };

@@ -106,6 +106,22 @@ const loadGoogleCredentials = () => {
   );
 };
 
+export const getGoogleSheetCredentialStatus = () => {
+  try {
+    loadGoogleCredentials();
+
+    return {
+      googleCredentialValid: true,
+      googleCredentialError: null,
+    };
+  } catch (err) {
+    return {
+      googleCredentialValid: false,
+      googleCredentialError: err.message,
+    };
+  }
+};
+
 const SHEET_NAME = "Sheet1";
 const SHEET_ID_RANGE = `'${SHEET_NAME}'!A2:A`;
 const SHEET_DATA_RANGE = `'${SHEET_NAME}'!A:L`;
