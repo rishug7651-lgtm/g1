@@ -31,6 +31,30 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const DEPLOYMENT_MARKER = "sheet-sync-credential-logs-2026-05-29";
 
+const getSheetConfigStatus = () => {
+  const legacyServiceAccount = String(
+    process.env.GOOGLE_SERVICE_ACCOUNT || ""
+  ).trim();
+
+  let googleCredentialSource = "missing";
+
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    googleCredentialSource = "service_account_json";
+  } else if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+    googleCredentialSource = "split_client_email_private_key";
+  } else if (legacyServiceAccount.startsWith("{")) {
+    googleCredentialSource = "legacy_google_service_account_json_ignored";
+  }
+
+  return {
+    adminApiTokenConfigured: Boolean(process.env.ADMIN_API_TOKEN),
+    googleSheetIdConfigured: Boolean(process.env.GOOGLE_SHEET_ID),
+    googleCredentialSource,
+    legacyGoogleServiceAccountJsonIgnored: legacyServiceAccount.startsWith("{"),
+    sheetRetryEnabled: process.env.SHEET_RETRY_ENABLED !== "false",
+  };
+};
+
 /* ================= ALLOWED ORIGINS ================= */
 
 const DEFAULT_ALLOWED_ORIGINS = [
@@ -175,6 +199,7 @@ app.get("/healthz", (req, res) => {
     message: "Server healthy",
     deploymentMarker: DEPLOYMENT_MARKER,
     gitCommit: process.env.RENDER_GIT_COMMIT || null,
+    sheetConfig: getSheetConfigStatus(),
   });
 });
 
@@ -241,6 +266,8 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await connectDB({ label: "MongoDB" });
+
+    console.log("Sheet config status:", getSheetConfigStatus());
 
     app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT}`);
