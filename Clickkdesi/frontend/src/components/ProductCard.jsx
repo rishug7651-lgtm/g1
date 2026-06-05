@@ -6,7 +6,11 @@ import { useState } from "react";
 import ResponsiveImage from "./ResponsiveImage";
 import { getPublicIdFromLegacySrc } from "../utils/cloudinary";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({
+  product,
+  imageSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw",
+  imageWidths = [320, 480, 640, 800],
+}) {
   const { addToCart } = useCart();
   const [hover, setHover] = useState(false);
 
@@ -81,8 +85,8 @@ export default function ProductCard({ product }) {
               alt={product.imageAlt || product.name}
               loading="lazy"
               className="w-full h-full object-cover"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              widths={[320, 480, 640, 800]}
+              sizes={imageSizes}
+              widths={imageWidths}
             />
           </Motion.div>
 

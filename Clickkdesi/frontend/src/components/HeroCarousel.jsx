@@ -24,12 +24,6 @@ export default function HeroCarousel() {
     },
     {
       type: "image",
-      publicId: productMediaPublicId("p1.jpg"),
-      title: "Discover Your Style",
-      subtitle: "Confidence in Every Outfit"
-    },
-    {
-      type: "image",
       publicId: productMediaPublicId("p3.jpg"),
       title: "Clickkdesi Collection",
       subtitle: "Fashion That Speaks You"
@@ -100,7 +94,7 @@ export default function HeroCarousel() {
                     loading={i === 0 ? "eager" : "lazy"}
                     className="w-full h-full object-cover"
                     sizes="100vw"
-                    widths={[640, 960, 1280, 1600]}
+                    widths={[640, 960]}
                   />
                 </Motion.div>
               )}
