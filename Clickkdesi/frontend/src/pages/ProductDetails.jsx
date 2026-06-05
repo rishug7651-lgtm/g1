@@ -115,7 +115,7 @@ export default function ProductDetails() {
         alt={product.imageAlt || product.name}
         loading="eager"
         sizes="(max-width: 768px) 100vw, 50vw"
-        widths={[480, 720, 960, 1200]}
+        widths={[360, 480, 640, 800]}
         className="rounded-xl shadow-lg w-full"
       />
 
@@ -151,7 +151,7 @@ export default function ProductDetails() {
             alt="Size Chart"
             loading="lazy"
             sizes="(max-width: 768px) 100vw, 50vw"
-            widths={[480, 720, 960]}
+            widths={[320, 480, 640]}
             className="rounded-lg shadow-md border cursor-zoom-in hover:scale-105 transition"
           />
         </div>

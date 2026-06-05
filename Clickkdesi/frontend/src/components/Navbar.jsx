@@ -54,8 +54,8 @@ export default function Navbar() {
             <ResponsiveImage
               publicId={siteMediaPublicIds.logo}
               alt="Clickkdesi"
-              widths={[80, 120, 180]}
-              sizes="120px"
+              widths={[64, 96, 120]}
+              sizes="96px"
               className="
                 h-10 w-auto
                 object-contain

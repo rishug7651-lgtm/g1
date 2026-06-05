@@ -50,7 +50,7 @@ export default function Cart() {
               alt={item.name}
               width="90"
               sizes="90px"
-              widths={[120, 180]}
+              widths={[90, 120]}
               className="rounded-lg w-[90px] h-[120px] object-cover"
             />
 

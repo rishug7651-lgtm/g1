@@ -9,7 +9,7 @@ import { getPublicIdFromLegacySrc } from "../utils/cloudinary";
 export default function ProductCard({
   product,
   imageSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw",
-  imageWidths = [320, 480, 640, 800],
+  imageWidths = [240, 320, 480, 640],
 }) {
   const { addToCart } = useCart();
   const [hover, setHover] = useState(false);

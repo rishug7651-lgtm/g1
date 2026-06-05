@@ -15,6 +15,9 @@ export default function ResponsiveImage({
   width,
   height,
   crop = "fill",
+  quality = "auto:eco",
+  format = "auto",
+  transformation,
   className = "",
   loading = "lazy",
   decoding = "async",
@@ -24,9 +27,12 @@ export default function ResponsiveImage({
   const baseWidth = width || widths[Math.min(widths.length - 1, 3)];
   const optimizedSrc =
     getCloudinaryImageUrl(resolvedPublicId, {
+      transformation,
       width: baseWidth,
       height,
       crop,
+      quality,
+      format,
     }) ||
     src ||
     imagePlaceholder;
@@ -34,9 +40,12 @@ export default function ResponsiveImage({
     ? widths
         .map((item) => {
           const url = getCloudinaryImageUrl(resolvedPublicId, {
+            transformation,
             width: item,
             height,
             crop,
+            quality,
+            format,
           });
 
           return url ? `${url} ${item}w` : "";

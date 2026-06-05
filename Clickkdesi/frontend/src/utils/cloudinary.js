@@ -1,11 +1,9 @@
 import {
   DEFAULT_CLOUDINARY_CLOUD_NAME,
   getCloudinaryImageUrl as buildCloudinaryImageUrl,
-  getCloudinaryVideoUrl as buildCloudinaryVideoUrl,
   legacyPhotoPathPublicIds,
   productMediaPublicId,
   siteMediaPublicIds,
-  videoMediaPublicIds,
 } from "@shared/cloudinaryConfig.js";
 
 const CLOUD_NAME =
@@ -15,7 +13,6 @@ export {
   DEFAULT_CLOUDINARY_CLOUD_NAME,
   productMediaPublicId,
   siteMediaPublicIds,
-  videoMediaPublicIds,
 };
 
 export const legacyPhotoPublicIds = legacyPhotoPathPublicIds;
@@ -28,10 +25,6 @@ export const imagePlaceholder = `data:image/svg+xml;charset=UTF-8,${placeholderS
 
 export const getCloudinaryImageUrl = (publicId, options = {}) => {
   return buildCloudinaryImageUrl(CLOUD_NAME, publicId, options);
-};
-
-export const getCloudinaryVideoUrl = (publicId, options = {}) => {
-  return buildCloudinaryVideoUrl(CLOUD_NAME, publicId, options);
 };
 
 export const getPublicIdFromLegacySrc = (src) => {

@@ -15,7 +15,7 @@ export default function Products() {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        const res = await getProducts({ category, limit: 48 });
+        const res = await getProducts({ category, limit: 24 });
 
         if (alive) {
           setProducts(res.products);
@@ -45,7 +45,12 @@ export default function Products() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
+            <ProductCard
+              key={product._id}
+              product={product}
+              imageSizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              imageWidths={[240, 320, 480, 640]}
+            />
           ))}
         </div>
       )}
