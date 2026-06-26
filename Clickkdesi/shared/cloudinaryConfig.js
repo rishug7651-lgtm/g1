@@ -32,7 +32,7 @@ export const legacyPhotoPublicIds = {
   "sc.jpeg": siteMediaPublicIds.sizeChart,
 };
 
-for (let i = 1; i <= 20; i += 1) {
+for (let i = 1; i <= 99; i += 1) {
   legacyPhotoPublicIds[`p${i}.jpg`] = productMediaPublicId(`p${i}.jpg`);
 }
 
