@@ -66,6 +66,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "https://g1-1-ph8w.onrender.com",
   "https://e-commerce-1-ot1x.onrender.com",
   "https://s4-zdqq.onrender.com",
+  "https://clickkdesistore.in/"
 ];
 
 const allowedOrigins = new Set(
