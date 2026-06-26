@@ -19,12 +19,12 @@ const ONRENDER_PHOTO_RE = /^https:\/\/[^/]+\.onrender\.com\/photos\//i;
 
 const responseCache = new Map();
 
-const backendURL = (process.env.PUBLIC_BACKEND_URL || "https://g1-x5ol.onrender.com").replace(
+const backendURL = (process.env.PUBLIC_BACKEND_URL || "https://s4-backend-uyvz.onrender.com").replace(
   /\/$/,
   ""
 );
 const frontendURL = (
-  process.env.PUBLIC_FRONTEND_URL || "https://e-commerce-1-ot1x.onrender.com"
+  process.env.PUBLIC_FRONTEND_URL || "https://clickkdesistore.in"
 ).replace(/\/$/, "");
 
 const clampNumber = (value, fallback, min, max) => {

@@ -77,36 +77,9 @@ export const productCatalog = [
     imageAlt: "Tara sleeveless cotton kurti",
     description: commonDescription,
   },
-  {
-    name: "Jheel",
-    mrp: 999,
-    price: 709,
-    category: "Full Sleeves",
-    imagePublicId: productMediaPublicId("p8.jpg"),
-    hoverImagePublicId: productMediaPublicId("p8.jpg"),
-    imageAlt: "Jheel full sleeves cotton kurti",
-    description: commonDescription,
-  },
-  {
-    name: "Siya",
-    mrp: 949,
-    price: 719,
-    category: "Full Sleeves",
-    imagePublicId: productMediaPublicId("p10.jpg"),
-    hoverImagePublicId: productMediaPublicId("p10.jpg"),
-    imageAlt: "Siya full sleeves cotton kurti",
-    description: commonDescription,
-  },
-  {
-    name: "Heer",
-    mrp: 899,
-    price: 699,
-    category: "Full Sleeves",
-    imagePublicId: productMediaPublicId("p11.jpg"),
-    hoverImagePublicId: productMediaPublicId("p12.jpg"),
-    imageAlt: "Heer full sleeves cotton kurti",
-    description: commonDescription,
-  },
+  
+  
+  
   {
     name: "Saanjh",
     mrp: 999,
@@ -127,16 +100,40 @@ export const productCatalog = [
     imageAlt: "Gulaabo 2.0 full sleeves cotton kurti",
     description: commonDescription,
   },
+  
   {
     name: "Gulaabo",
     mrp: 1399,
-    price: 749,
+    price: 739,
     category: "Sleeveless",
-    imagePublicId: productMediaPublicId("p17.jpg"),
-    hoverImagePublicId: productMediaPublicId("p18.jpg"),
-    imageAlt: "Gulaabo sleeveless cotton kurti",
+    imagePublicId: productMediaPublicId("p19.jpg"),
+    hoverImagePublicId: productMediaPublicId("p20.jpg"),
+    imageAlt: "Noori full sleeves cotton kurti",
     description: commonDescription,
   },
+
+  {
+    name: "FALAK",
+    mrp: 1299,
+    price: 719,
+    category: "Full Sleeves",
+    imagePublicId: productMediaPublicId("p19.jpg"),
+    hoverImagePublicId: productMediaPublicId("p20.jpg"),
+    imageAlt: "Noori full sleeves cotton kurti",
+    description: commonDescription,
+  },
+
+  {
+    name: "AARZU",
+    mrp: 1599,
+    price: 849,
+    category: "Full Sleeves",
+    imagePublicId: productMediaPublicId("p19.jpg"),
+    hoverImagePublicId: productMediaPublicId("p20.jpg"),
+    imageAlt: "Noori full sleeves cotton kurti",
+    description: commonDescription,
+  },
+
   {
     name: "Noori",
     mrp: 1299,
@@ -147,4 +144,5 @@ export const productCatalog = [
     imageAlt: "Noori full sleeves cotton kurti",
     description: commonDescription,
   },
+
 ];

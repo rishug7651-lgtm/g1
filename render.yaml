@@ -45,9 +45,9 @@ services:
       - key: CLOUDINARY_CLOUD_NAME
         value: dje6kqbmm
       - key: CORS_ORIGINS
-        value: https://s4-zdqq.onrender.com
+        value: https://clickkdesistore.in,https://www.clickkdesistore.in,https://s4-zdqq.onrender.com
       - key: PUBLIC_FRONTEND_URL
-        value: https://s4-zdqq.onrender.com
+        value: https://clickkdesistore.in
       - key: PUBLIC_BACKEND_URL
         value: https://s4-backend-uyvz.onrender.com
 

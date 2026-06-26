@@ -66,13 +66,26 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "https://g1-1-ph8w.onrender.com",
   "https://e-commerce-1-ot1x.onrender.com",
   "https://s4-zdqq.onrender.com",
-  "https://clickkdesistore.in/"
+  "https://clickkdesistore.in",
+  "https://www.clickkdesistore.in"
 ];
+
+const normalizeOrigin = (value) => {
+  const origin = String(value || "").trim().replace(/\/+$/, "");
+
+  if (!origin) return "";
+
+  try {
+    return new URL(origin).origin;
+  } catch {
+    return origin;
+  }
+};
 
 const allowedOrigins = new Set(
   (process.env.CORS_ORIGINS || DEFAULT_ALLOWED_ORIGINS.join(","))
     .split(",")
-    .map((origin) => origin.trim())
+    .map(normalizeOrigin)
     .filter(Boolean)
 );
 
@@ -91,7 +104,7 @@ app.use(
         return callback(null, true);
       }
 
-      if (allowedOrigins.has(origin)) {
+      if (allowedOrigins.has(normalizeOrigin(origin))) {
         return callback(null, true);
       }
 

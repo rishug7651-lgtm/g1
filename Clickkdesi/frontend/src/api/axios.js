@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const LOCAL_API_BASE_URL = "http://localhost:5000/api";
-const PRODUCTION_API_BASE_URL = "https://clickkdesistore.in/api";
+const PRODUCTION_API_BASE_URL = "https://s4-backend-uyvz.onrender.com/api";
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL ||
