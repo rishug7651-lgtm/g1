@@ -80,16 +80,7 @@ export const productCatalog = [
   
   
   
-  {
-    name: "Saanjh",
-    mrp: 999,
-    price: 719,
-    category: "Full Sleeves",
-    imagePublicId: productMediaPublicId("p13.jpg"),
-    hoverImagePublicId: productMediaPublicId("p14.jpg"),
-    imageAlt: "Saanjh full sleeves cotton kurti",
-    description: commonDescription,
-  },
+  
   {
     name: "Gulaabo 2.0",
     mrp: 1399,
@@ -113,7 +104,7 @@ export const productCatalog = [
   },
 
   {
-    name: "FALAK",
+    name: "Falak",
     mrp: 1299,
     price: 719,
     category: "Full Sleeves",
@@ -124,7 +115,7 @@ export const productCatalog = [
   },
 
   {
-    name: "AARZU",
+    name: "Aarzu",
     mrp: 1599,
     price: 849,
     category: "Full Sleeves",
