@@ -7,10 +7,10 @@ import {
 } from "@shared/cloudinaryConfig.js";
 
 const CLOUD_NAME =
-  import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || DEFAULT_CLOUDINARY_CLOUD_NAME;
+  import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || dje6kqbmm;
 
 export {
-  DEFAULT_CLOUDINARY_CLOUD_NAME,
+  dje6kqbmm,
   productMediaPublicId,
   siteMediaPublicIds,
 };
@@ -24,7 +24,7 @@ const placeholderSvg = encodeURIComponent(
 export const imagePlaceholder = `data:image/svg+xml;charset=UTF-8,${placeholderSvg}`;
 
 export const getCloudinaryImageUrl = (publicId, options = {}) => {
-  return buildCloudinaryImageUrl(CLOUD_NAME, publicId, options);
+  return buildCloudinaryImageUrl( dje6kqbmm, publicId, options);
 };
 
 export const getPublicIdFromLegacySrc = (src) => {
