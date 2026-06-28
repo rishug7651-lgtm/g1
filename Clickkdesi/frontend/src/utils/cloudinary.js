@@ -3,6 +3,7 @@ import {
   getCloudinaryImageUrl as buildCloudinaryImageUrl,
   legacyPhotoPathPublicIds,
   productMediaPublicId,
+  siteMediaCacheKeys,
   siteMediaPublicIds,
 } from "@shared/cloudinaryConfig.js";
 
@@ -12,6 +13,7 @@ const CLOUD_NAME =
 export {
   DEFAULT_CLOUDINARY_CLOUD_NAME,
   productMediaPublicId,
+  siteMediaCacheKeys,
   siteMediaPublicIds,
 };
 

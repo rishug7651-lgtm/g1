@@ -5,6 +5,7 @@ import { useCart } from "../context/CartContext";
 import ResponsiveImage from "../components/ResponsiveImage";
 import {
   getPublicIdFromLegacySrc,
+  siteMediaCacheKeys,
   siteMediaPublicIds,
 } from "../utils/cloudinary";
 
@@ -148,6 +149,7 @@ export default function ProductDetails() {
           <h3 className="text-xl font-semibold mb-3">Size Chart</h3>
           <ResponsiveImage
             publicId={siteMediaPublicIds.sizeChart}
+            cacheKey={siteMediaCacheKeys.sizeChart}
             alt="Size Chart"
             loading="lazy"
             sizes="(max-width: 768px) 100vw, 50vw"

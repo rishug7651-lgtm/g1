@@ -17,6 +17,7 @@ export default function ResponsiveImage({
   crop = "fill",
   quality = "auto:eco",
   format = "auto",
+  cacheKey,
   transformation,
   className = "",
   loading = "lazy",
@@ -33,6 +34,7 @@ export default function ResponsiveImage({
       crop,
       quality,
       format,
+      cacheKey,
     }) ||
     src ||
     imagePlaceholder;
@@ -46,6 +48,7 @@ export default function ResponsiveImage({
             crop,
             quality,
             format,
+            cacheKey,
           });
 
           return url ? `${url} ${item}w` : "";

@@ -20,6 +20,11 @@ export const siteMediaPublicIds = {
   sizeChart: `${SITE_MEDIA_FOLDER}/size-chart`,
 };
 
+export const siteMediaCacheKeys = {
+  // Bump this when replacing a same-public-id asset to break browser/CDN cache.
+  sizeChart: "20260629",
+};
+
 export const videoMediaPublicIds = {
   homepage: `${VIDEO_MEDIA_FOLDER}/homepage`,
 };
@@ -70,15 +75,17 @@ export const buildCloudinaryImageTransform = ({
 };
 
 export const getCloudinaryImageUrl = (cloudName, publicId, options = {}) => {
+  const { cacheKey, ...transformOptions } = options;
   const cleanCloudName = cleanCloudinaryPublicId(cloudName);
   const cleanPublicId = cleanCloudinaryPublicId(publicId);
 
   if (!cleanCloudName || !cleanPublicId) return "";
 
-  const transform = buildCloudinaryImageTransform(options);
+  const transform = buildCloudinaryImageTransform(transformOptions);
   const transformPath = transform ? `${transform}/` : "";
+  const cacheQuery = cacheKey ? `?v=${encodeURIComponent(cacheKey)}` : "";
 
-  return `https://res.cloudinary.com/${cleanCloudName}/image/upload/${transformPath}${cleanPublicId}`;
+  return `https://res.cloudinary.com/${cleanCloudName}/image/upload/${transformPath}${cleanPublicId}${cacheQuery}`;
 };
 
 export const getCloudinaryVideoUrl = (

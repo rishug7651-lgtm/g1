@@ -96,6 +96,7 @@ const signUpload = (params) => {
 const uploadFile = async ({ filePath, publicId, resourceType }) => {
   const timestamp = Math.round(Date.now() / 1000);
   const params = {
+    invalidate: "true",
     overwrite: "true",
     public_id: publicId,
     timestamp,
@@ -114,6 +115,7 @@ const uploadFile = async ({ filePath, publicId, resourceType }) => {
   form.set("timestamp", String(timestamp));
   form.set("public_id", publicId);
   form.set("overwrite", "true");
+  form.set("invalidate", "true");
   form.set("signature", signature);
 
   const endpoint = `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`;
