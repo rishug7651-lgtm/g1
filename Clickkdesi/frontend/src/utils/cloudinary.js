@@ -1,5 +1,5 @@
 import {
-  DEFAULT_CLOUDINARY_CLOUD_NAME,
+  dje6kqbmm,
   getCloudinaryImageUrl as buildCloudinaryImageUrl,
   legacyPhotoPathPublicIds,
   productMediaPublicId,
