@@ -95,7 +95,7 @@ export const productCatalog = [
   {
     name: "Gulaabo",
     mrp: 1399,
-    price: 739,
+    price: 719,
     category: "Sleeveless",
     imagePublicId: productMediaPublicId("p30.jpg"),
     hoverImagePublicId: productMediaPublicId("p31.jpg"),
@@ -117,7 +117,7 @@ export const productCatalog = [
   {
     name: "Aarzu",
     mrp: 1599,
-    price: 849,
+    price: 799,
     category: "Full Sleeves",
     imagePublicId: productMediaPublicId("p32.jpg"),
     hoverImagePublicId: productMediaPublicId("p33.jpg"),
