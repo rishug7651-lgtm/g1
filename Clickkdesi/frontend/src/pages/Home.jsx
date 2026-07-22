@@ -119,7 +119,7 @@ function Products({ products }) {
       ">
         {products.map((p) => (
           <ProductCard
-            key={p._id}
+            key={p._id || p.imagePublicId || p.name}
             product={p}
             imageSizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             imageWidths={[240, 320, 480]}

@@ -17,6 +17,20 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_SECRET,
 });
 
+const timingSafeHexEqual = (actual, expected) => {
+  const actualValue = String(actual || "");
+  const expectedValue = String(expected || "");
+
+  if (!/^[a-f0-9]{64}$/i.test(actualValue) || !/^[a-f0-9]{64}$/i.test(expectedValue)) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(
+    Buffer.from(actualValue, "hex"),
+    Buffer.from(expectedValue, "hex")
+  );
+};
+
 router.post("/create-order", noStore, async (req, res) => {
   try {
     const { orderId } = req.body;
@@ -31,8 +45,16 @@ router.post("/create-order", noStore, async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
+    if (order.paymentStatus !== "pending") {
+      return res.status(409).json({ message: "Order is not payable" });
+    }
+
+    if (!Number.isFinite(order.totalAmount) || order.totalAmount <= 0) {
+      return res.status(400).json({ message: "Invalid order amount" });
+    }
+
     const razorpayOrder = await razorpay.orders.create({
-      amount: order.totalAmount * 100,
+      amount: Math.round(order.totalAmount * 100),
       currency: "INR",
     });
 
@@ -62,7 +84,7 @@ router.post(
         .update(req.body)
         .digest("hex");
 
-      if (signature !== expectedSignature) {
+      if (!timingSafeHexEqual(expectedSignature, signature)) {
         console.log("Invalid webhook signature");
         return res.status(400).send("Invalid signature");
       }
@@ -108,11 +130,24 @@ router.post("/verify", noStore, verifyPayment);
 
 router.post("/payment-failed", noStore, async (req, res) => {
   try {
-    const { orderId } = req.body;
+    const { orderId, razorpayOrderId } = req.body;
 
-    await Order.findByIdAndUpdate(orderId, {
-      paymentStatus: "failed",
-    });
+    if (!orderId || !razorpayOrderId) {
+      return res.status(400).json({ message: "Payment details missing" });
+    }
+
+    const order = await Order.findOneAndUpdate(
+      {
+        _id: orderId,
+        razorpayOrderId,
+        paymentStatus: { $ne: "paid" },
+      },
+      { paymentStatus: "failed" }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
 
     return res.json({ message: "Payment marked failed" });
   } catch (err) {

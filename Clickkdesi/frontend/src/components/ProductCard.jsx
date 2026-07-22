@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { motion as Motion } from "framer-motion";
-import { ShoppingBag } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import ResponsiveImage from "./ResponsiveImage";
 import { getPublicIdFromLegacySrc } from "../utils/cloudinary";
@@ -13,23 +13,67 @@ export default function ProductCard({
 }) {
   const { addToCart } = useCart();
   const [hover, setHover] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  const mainImagePublicId =
+    product?.imagePublicId || getPublicIdFromLegacySrc(product?.image);
+  const backImagePublicId =
+    product?.hoverImagePublicId || getPublicIdFromLegacySrc(product?.hoverImage);
+  const hasBackImage = Boolean(
+    (product?.hoverImage && product.hoverImage !== product.image) ||
+      (backImagePublicId && backImagePublicId !== mainImagePublicId)
+  );
+  const images = [
+    {
+      label: "Front",
+      publicId: mainImagePublicId,
+      src: product?.image,
+    },
+    ...(hasBackImage
+      ? [
+          {
+            label: "Back",
+            publicId: backImagePublicId,
+            src: product?.hoverImage,
+          },
+        ]
+      : []),
+  ];
+  const visibleImageIndex = hasBackImage && hover ? 1 : activeImageIndex;
+  const visibleImage = images[visibleImageIndex] || images[0];
+  const discount =
+    product?.mrp &&
+    Math.round(((product.mrp - product.price) / product.mrp) * 100);
 
   if (!product) return null;
 
-  const mainImagePublicId =
-    product.imagePublicId || getPublicIdFromLegacySrc(product.image);
-  const hoverImagePublicId =
-    product.hoverImagePublicId ||
-    getPublicIdFromLegacySrc(product.hoverImage) ||
-    mainImagePublicId;
-  const discount =
-    product.mrp &&
-    Math.round(((product.mrp - product.price) / product.mrp) * 100);
+  const changeMobileImage = (event, direction) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!hasBackImage) return;
+
+    setHover(false);
+    setActiveImageIndex(
+      (current) => (current + direction + images.length) % images.length
+    );
+  };
+
+  const handlePointerEnter = (event) => {
+    if (event.pointerType === "mouse") {
+      setHover(true);
+    }
+  };
+
+  const handlePointerLeave = (event) => {
+    if (event.pointerType === "mouse") {
+      setHover(false);
+    }
+  };
 
   return (
     <Motion.div
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
       whileHover={{ y: -12 }}
       transition={{ duration: 0.4 }}
       className="relative group"
@@ -43,21 +87,25 @@ export default function ProductCard({
         "
       />
 
-      <Link to={`/product/${product._id}`}>
-        <Motion.div
-          className="
-            relative h-[380px]
-            overflow-hidden
-            backdrop-blur-lg
-            bg-white/70
-            shadow-xl
-          "
-          animate={{
-            borderRadius: hover
-              ? "60% 40% 55% 45% / 45% 60% 40% 55%"
-              : "28px",
-          }}
-          transition={{ duration: 0.6 }}
+      <Motion.div
+        className="
+          relative h-[380px]
+          overflow-hidden
+          backdrop-blur-lg
+          bg-white/70
+          shadow-xl
+        "
+        animate={{
+          borderRadius: hover
+            ? "60% 40% 55% 45% / 45% 60% 40% 55%"
+            : "28px",
+        }}
+        transition={{ duration: 0.6 }}
+      >
+        <Link
+          to={`/product/${product._id}`}
+          aria-label={`View ${product.name}`}
+          className="block h-full"
         >
           {discount && (
             <div
@@ -74,55 +122,87 @@ export default function ProductCard({
           )}
 
           <Motion.div
-            key={hover ? hoverImagePublicId : mainImagePublicId}
+            key={visibleImage.publicId || visibleImage.src}
             className="w-full h-full object-cover"
             animate={{ scale: hover ? 1.1 : 1 }}
             transition={{ duration: 0.5 }}
           >
             <ResponsiveImage
-              publicId={hover ? hoverImagePublicId : mainImagePublicId}
-              src={hover ? product.hoverImage : product.image}
-              alt={product.imageAlt || product.name}
+              publicId={visibleImage.publicId}
+              src={visibleImage.src}
+              alt={`${product.name} ${visibleImage.label.toLowerCase()} view`}
               loading="lazy"
               className="w-full h-full object-cover"
               sizes={imageSizes}
               widths={imageWidths}
             />
           </Motion.div>
+        </Link>
 
-          <Motion.div
-            className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"
-            animate={{ opacity: hover ? 1 : 0 }}
-          />
-
-          <Motion.div
-            className="absolute bottom-5 left-1/2 -translate-x-1/2"
-            animate={{
-              opacity: hover ? 1 : 0,
-              y: hover ? 0 : 25,
-            }}
-          >
+        {hasBackImage && (
+          <div className="absolute inset-x-3 top-1/2 z-30 flex -translate-y-1/2 items-center justify-between sm:hidden">
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                addToCart(product);
-              }}
-              className="
-                flex items-center gap-2
-                bg-white text-black
-                px-6 py-2
-                rounded-full
-                shadow-lg
-                hover:bg-black hover:text-white
-                transition
-              "
+              type="button"
+              aria-label={`Show previous image for ${product.name}`}
+              onClick={(event) => changeMobileImage(event, -1)}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-pink-600 shadow-md"
             >
-              <ShoppingBag size={18} />
-              Add To Cart
+              <ChevronLeft size={18} />
             </button>
-          </Motion.div>
-        </Motion.div>
-      </Link>
+
+            <button
+              type="button"
+              aria-label={`Show next image for ${product.name}`}
+              onClick={(event) => changeMobileImage(event, 1)}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-pink-600 shadow-md"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
+
+        {hasBackImage && (
+          <div className="absolute right-3 top-3 z-30 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-pink-600 shadow-md sm:hidden">
+            {visibleImage.label}
+          </div>
+        )}
+
+        <Motion.div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"
+          animate={{ opacity: hover ? 1 : 0 }}
+        />
+
+        <div
+          className="
+            absolute bottom-5 left-1/2 z-30 -translate-x-1/2
+            opacity-100 sm:opacity-0
+            translate-y-0 sm:translate-y-5
+            transition duration-300
+            sm:group-hover:translate-y-0 sm:group-hover:opacity-100
+          "
+        >
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              addToCart(product);
+            }}
+            className="
+              flex items-center gap-2
+              bg-white text-black
+              px-6 py-2
+              rounded-full
+              shadow-lg
+              hover:bg-black hover:text-white
+              transition
+            "
+          >
+            <ShoppingBag size={18} />
+            Add To Cart
+          </button>
+        </div>
+      </Motion.div>
 
       <Motion.div className="mt-5 text-center" animate={{ y: hover ? -4 : 0 }}>
         <h3 className="font-semibold text-lg">{product.name}</h3>

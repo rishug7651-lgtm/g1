@@ -155,6 +155,16 @@ const getSheetsClient = () => {
 
 const normalize = (val) => String(val || "").trim();
 
+const sheetText = (val) => {
+  const value = normalize(val);
+
+  if (/^[=+\-@\t\r]/.test(value)) {
+    return `'${value}`;
+  }
+
+  return value;
+};
+
 const getIndiaTimestamp = () =>
   new Date().toLocaleString("en-IN", {
     timeZone: "Asia/Kolkata",
@@ -228,21 +238,21 @@ const buildMaskedOrderLog = (order) => ({
 });
 
 const createRow = (order) => [
-  normalize(order?._id),
-  normalize(order?.shippingAddress?.name),
-  normalize(order?.shippingAddress?.email),
-  normalize(order?.shippingAddress?.phone),
-  normalize(order?.shippingAddress?.address),
-  normalize(order?.shippingAddress?.pincode),
-  normalize(
+  sheetText(order?._id),
+  sheetText(order?.shippingAddress?.name),
+  sheetText(order?.shippingAddress?.email),
+  sheetText(order?.shippingAddress?.phone),
+  sheetText(order?.shippingAddress?.address),
+  sheetText(order?.shippingAddress?.pincode),
+  sheetText(
     order?.products
       ?.map((p) => `${p?.name} (${p?.size})`)
       .join(", ")
   ),
   order?.totalAmount || 0,
-  normalize(order?.couponCode),
-  normalize(order?.paymentStatus),
-  normalize(order?.paymentId),
+  sheetText(order?.couponCode),
+  sheetText(order?.paymentStatus),
+  sheetText(order?.paymentId),
   getSafeDate(),
 ];
 
@@ -342,7 +352,7 @@ const saveOrderToSheetOnce = async (order, orderId) => {
       await sheets.spreadsheets.values.update({
         spreadsheetId: getSpreadsheetId(),
         range: `'${SHEET_NAME}'!A${rowIndex}:L${rowIndex}`,
-        valueInputOption: "USER_ENTERED",
+        valueInputOption: "RAW",
         requestBody: {
           values: [rowData],
         },
@@ -355,7 +365,7 @@ const saveOrderToSheetOnce = async (order, orderId) => {
       await sheets.spreadsheets.values.append({
         spreadsheetId: getSpreadsheetId(),
         range: SHEET_DATA_RANGE,
-        valueInputOption: "USER_ENTERED",
+        valueInputOption: "RAW",
         insertDataOption: "INSERT_ROWS",
         requestBody: {
           values: [rowData],

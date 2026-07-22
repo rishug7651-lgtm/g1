@@ -11,6 +11,14 @@ const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY,
 });
 
+const escapeHtml = (value) =>
+  String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 export const sendOrderMail = async (to, order, invoicePath) => {
   const sentFrom = new Sender(
     process.env.MAILERSEND_FROM_EMAIL || "test-q3enl6kd7qr42vwr.mlsender.net",
@@ -27,9 +35,9 @@ export const sendOrderMail = async (to, order, invoicePath) => {
     .setSubject("Order Confirmed")
     .setHtml(`
       <h2>Order Confirmed</h2>
-      <p>Hello ${order.shippingAddress.name}</p>
-      <p>Order ID: ${order._id}</p>
-      <p>Total: Rs. ${order.totalAmount}</p>
+      <p>Hello ${escapeHtml(order.shippingAddress?.name)}</p>
+      <p>Order ID: ${escapeHtml(order._id)}</p>
+      <p>Total: Rs. ${escapeHtml(order.totalAmount)}</p>
     `)
     .setAttachments(attachments);
 
