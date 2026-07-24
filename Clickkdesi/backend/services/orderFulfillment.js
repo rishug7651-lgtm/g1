@@ -1,6 +1,10 @@
 import Order from "../models/Order.js";
 import { generateInvoice } from "../utils/generateInvoice.js";
-import { sendOrderMail } from "../utils/sendEmail.js";
+import {
+  getMailCcEmail,
+  getMailConfigIssue,
+  sendOrderMail,
+} from "../utils/sendEmail.js";
 import { syncOrderToSheetOnce } from "../utils/sheetSync.js";
 
 const fulfillmentLocks = new Map();
@@ -21,26 +25,47 @@ export const buildOrderSummary = (order) => ({
   paymentStatus: order.paymentStatus,
 });
 
+const getEmailErrorLog = (err) => ({
+  message: err?.message || String(err),
+  code: err?.code,
+  statusCode: err?.statusCode || err?.status,
+  body: err?.body,
+});
+
 const sendConfirmationEmails = async (order, invoicePath) => {
-  let changed = false;
+  const configIssue = getMailConfigIssue();
 
-  if (!process.env.MAILERSEND_API_KEY) {
-    return changed;
+  if (configIssue) {
+    console.log("Confirmation email skipped:", {
+      orderId: String(order._id),
+      reason: configIssue,
+    });
+    return false;
   }
 
-  if (order.shippingAddress?.email && !order.confirmationEmailSentAt) {
-    await sendOrderMail(order.shippingAddress.email, order, invoicePath);
+  const customerEmail = order.shippingAddress?.email;
+
+  if (!customerEmail || order.confirmationEmailSentAt) {
+    return false;
+  }
+
+  try {
+    await sendOrderMail(customerEmail, order, invoicePath);
     order.confirmationEmailSentAt = new Date();
-    changed = true;
-  }
 
-  if (process.env.ADMIN_EMAIL && !order.adminEmailSentAt) {
-    await sendOrderMail(process.env.ADMIN_EMAIL, order, invoicePath);
-    order.adminEmailSentAt = new Date();
-    changed = true;
-  }
+    if (getMailCcEmail(customerEmail) && !order.adminEmailSentAt) {
+      order.adminEmailSentAt = order.confirmationEmailSentAt;
+    }
 
-  return changed;
+    return true;
+  } catch (err) {
+    console.log("Customer confirmation email failed:", {
+      orderId: String(order._id),
+      recipient: "customer",
+      ...getEmailErrorLog(err),
+    });
+    return false;
+  }
 };
 
 const fulfillPaidOrderOnce = async ({
@@ -110,12 +135,16 @@ const fulfillPaidOrderOnce = async ({
         await order.save();
       }
     } catch (err) {
-      console.log("Confirmation email failed:", {
-        message: err?.message || String(err),
-        code: err?.code,
-        status: err?.status,
+      console.log("Confirmation email processing failed:", {
+        orderId: String(order._id),
+        ...getEmailErrorLog(err),
       });
     }
+  } else {
+    console.log("Confirmation email skipped:", {
+      orderId: String(order._id),
+      reason: "invoice not available",
+    });
   }
 
   return { order, fulfilled: true };

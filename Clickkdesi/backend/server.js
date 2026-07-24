@@ -17,6 +17,7 @@ import {
   getGoogleSheetCredentialStatus,
   saveOrderToSheet,
 } from "./utils/googleSheet.js";
+import { getMailConfigStatus } from "./utils/sendEmail.js";
 
 import {
   compressionMiddleware,
@@ -218,6 +219,7 @@ app.get("/healthz", (req, res) => {
     deploymentMarker: DEPLOYMENT_MARKER,
     gitCommit: process.env.RENDER_GIT_COMMIT || null,
     sheetConfig: getSheetConfigStatus(),
+    mailConfig: getMailConfigStatus(),
   });
 });
 
@@ -286,6 +288,7 @@ const startServer = async () => {
     await connectDB({ label: "MongoDB" });
 
     console.log("Sheet config status:", getSheetConfigStatus());
+    console.log("Mail config status:", getMailConfigStatus());
 
     app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT}`);

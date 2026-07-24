@@ -22,11 +22,19 @@ services:
         sync: false
       - key: ADMIN_EMAIL
         sync: false
-      - key: MAILERSEND_API_KEY
+      - key: EMAILJS_SERVICE_ID
         sync: false
-      - key: MAILERSEND_FROM_EMAIL
+      - key: EMAILJS_TEMPLATE_ID
         sync: false
-      - key: MAILERSEND_FROM_NAME
+      - key: EMAILJS_PUBLIC_KEY
+        sync: false
+      - key: EMAILJS_PRIVATE_KEY
+        sync: false
+      - key: EMAILJS_FROM_EMAIL
+        sync: false
+      - key: EMAILJS_FROM_NAME
+        sync: false
+      - key: EMAILJS_CC_EMAIL
         sync: false
       - key: GOOGLE_SHEET_ID
         sync: false
