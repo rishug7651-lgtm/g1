@@ -99,7 +99,7 @@ export const productCatalog = [
     category: "Sleeveless",
     imagePublicId: productMediaPublicId("p30.jpg"),
     hoverImagePublicId: productMediaPublicId("p31.jpg"),
-    imageAlt: "Noori full sleeves cotton kurti",
+    imageAlt: "Gulaabo sleeveless cotton kurti",
     description: commonDescription,
   },
 
@@ -133,6 +133,17 @@ export const productCatalog = [
     imagePublicId: productMediaPublicId("p19.jpg"),
     hoverImagePublicId: productMediaPublicId("p20.jpg"),
     imageAlt: "Noori full sleeves cotton kurti",
+    description: commonDescription,
+  },
+
+  {
+    name: "Geet",
+    mrp: 1099,
+    price: 699,
+    category: "Sleeveless",
+    imagePublicId: productMediaPublicId("p37.jpg"),
+    hoverImagePublicId: productMediaPublicId("p38.jpg"),
+    imageAlt: "Geet sleeveless cotton kurti",
     description: commonDescription,
   },
 
