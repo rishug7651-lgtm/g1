@@ -45,7 +45,7 @@ const getSheetConfigStatus = () => {
     googleSheetIdConfigured: Boolean(process.env.GOOGLE_SHEET_ID),
     googleCredentialSource,
     ...getGoogleSheetCredentialStatus(),
-    googleServiceAccountJsonConfigured: hasLegacyGoogleServiceAccountJson(),
+    legacyGoogleServiceAccountJsonIgnored: hasLegacyGoogleServiceAccountJson(),
     sheetRetryEnabled: process.env.SHEET_RETRY_ENABLED !== "false",
   };
 };

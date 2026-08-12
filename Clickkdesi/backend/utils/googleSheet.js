@@ -11,6 +11,10 @@ const DEFAULT_GOOGLE_SERVICE_ACCOUNT_FILE = "/etc/secrets/google.json";
 const normalizePrivateKey = (value) => {
   let key = String(value || "").trim();
 
+  if (key.endsWith(",")) {
+    key = key.slice(0, -1).trim();
+  }
+
   if (
     (key.startsWith('"') && key.endsWith('"')) ||
     (key.startsWith("'") && key.endsWith("'"))
