@@ -5,10 +5,8 @@ import { google } from "googleapis";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const DEFAULT_GOOGLE_SERVICE_ACCOUNT_FILE = "/etc/secrets/google.json";
 
 const normalizePrivateKey = (value) => {
   let key = String(value || "").trim();
@@ -56,17 +54,81 @@ const parseGoogleServiceAccountJson = (value, sourceName) => {
   }
 };
 
+const parseGoogleServiceAccountJsonBase64 = (value, sourceName) => {
+  const decoded = Buffer.from(String(value || "").trim(), "base64").toString(
+    "utf8"
+  );
+
+  return parseGoogleServiceAccountJson(decoded, sourceName);
+};
+
+export const hasLegacyGoogleServiceAccountJson = () =>
+  String(process.env.GOOGLE_SERVICE_ACCOUNT || "").trim().startsWith("{");
+
+const getGoogleCredentialFilePath = () => {
+  const candidates = [
+    process.env.GOOGLE_SERVICE_ACCOUNT_FILE,
+    process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    DEFAULT_GOOGLE_SERVICE_ACCOUNT_FILE,
+    path.join(process.cwd(), "google.json"),
+  ]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+
+  return candidates.find((candidate) => fs.existsSync(candidate));
+};
+
 const getGoogleProjectId = () => {
   const legacyProjectId = String(process.env.GOOGLE_SERVICE_ACCOUNT || "").trim();
 
-  if (legacyProjectId.startsWith("{")) {
+  if (hasLegacyGoogleServiceAccountJson()) {
     return process.env.GOOGLE_PROJECT_ID || undefined;
   }
 
   return process.env.GOOGLE_PROJECT_ID || legacyProjectId || undefined;
 };
 
+export const getGoogleCredentialSource = () => {
+  if (getGoogleCredentialFilePath()) {
+    return "service_account_file";
+  }
+
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64) {
+    return "service_account_json_base64";
+  }
+
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    return "service_account_json";
+  }
+
+  if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+    return "split_client_email_private_key";
+  }
+
+  if (hasLegacyGoogleServiceAccountJson()) {
+    return "legacy_google_service_account_json_ignored";
+  }
+
+  return "missing";
+};
+
 const loadGoogleCredentials = () => {
+  const credentialsFilePath = getGoogleCredentialFilePath();
+
+  if (credentialsFilePath) {
+    return parseGoogleServiceAccountJson(
+      fs.readFileSync(credentialsFilePath, "utf8"),
+      credentialsFilePath
+    );
+  }
+
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64) {
+    return parseGoogleServiceAccountJsonBase64(
+      process.env.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64,
+      "GOOGLE_SERVICE_ACCOUNT_JSON_BASE64"
+    );
+  }
+
   if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
     return parseGoogleServiceAccountJson(
       process.env.GOOGLE_SERVICE_ACCOUNT_JSON,
@@ -86,23 +148,14 @@ const loadGoogleCredentials = () => {
     };
   }
 
-  const credentialsPath = path.join(__dirname, "../config/google.json");
-
-  if (!fs.existsSync(credentialsPath)) {
+  if (hasLegacyGoogleServiceAccountJson()) {
     throw new Error(
-      "Google Sheets credentials missing. Set GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_CLIENT_EMAIL + GOOGLE_PRIVATE_KEY, or restore backend/config/google.json locally."
+      "GOOGLE_SERVICE_ACCOUNT contains service account JSON but is ignored. Move it to GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 or GOOGLE_SERVICE_ACCOUNT_JSON."
     );
   }
 
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "Google Sheets credentials missing. Set GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_CLIENT_EMAIL + GOOGLE_PRIVATE_KEY in Render."
-    );
-  }
-
-  return parseGoogleServiceAccountJson(
-    fs.readFileSync(credentialsPath, "utf8"),
-    "backend/config/google.json"
+  throw new Error(
+    "Google Sheets credentials missing. Add a Render Secret File named google.json, set GOOGLE_SERVICE_ACCOUNT_FILE, or set GOOGLE_SERVICE_ACCOUNT_JSON / GOOGLE_CLIENT_EMAIL + GOOGLE_PRIVATE_KEY. Do not commit backend/config/google.json."
   );
 };
 
@@ -151,6 +204,23 @@ const getSheetsClient = () => {
   }
 
   return sheetsClient;
+};
+
+export const verifyGoogleSheetAccess = async () => {
+  const sheets = getSheetsClient();
+
+  const res = await sheets.spreadsheets.get({
+    spreadsheetId: getSpreadsheetId(),
+    fields: "spreadsheetId,properties(title),sheets(properties(title))",
+  });
+
+  return {
+    spreadsheetId: res.data.spreadsheetId,
+    title: res.data.properties?.title || "",
+    sheets: (res.data.sheets || [])
+      .map((sheet) => sheet.properties?.title)
+      .filter(Boolean),
+  };
 };
 
 const normalize = (val) => String(val || "").trim();

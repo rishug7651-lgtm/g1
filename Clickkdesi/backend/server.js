@@ -14,7 +14,9 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import shareRouter from "./routes/share.js";
 
 import {
+  getGoogleCredentialSource,
   getGoogleSheetCredentialStatus,
+  hasLegacyGoogleServiceAccountJson,
   saveOrderToSheet,
 } from "./utils/googleSheet.js";
 import { getMailConfigStatus } from "./utils/sendEmail.js";
@@ -36,26 +38,14 @@ const PORT = process.env.PORT || 5000;
 const DEPLOYMENT_MARKER = "sheet-sync-credential-logs-2026-05-29";
 
 const getSheetConfigStatus = () => {
-  const legacyServiceAccount = String(
-    process.env.GOOGLE_SERVICE_ACCOUNT || ""
-  ).trim();
-
-  let googleCredentialSource = "missing";
-
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-    googleCredentialSource = "service_account_json";
-  } else if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
-    googleCredentialSource = "split_client_email_private_key";
-  } else if (legacyServiceAccount.startsWith("{")) {
-    googleCredentialSource = "legacy_google_service_account_json_ignored";
-  }
+  const googleCredentialSource = getGoogleCredentialSource();
 
   return {
     adminApiTokenConfigured: Boolean(process.env.ADMIN_API_TOKEN),
     googleSheetIdConfigured: Boolean(process.env.GOOGLE_SHEET_ID),
     googleCredentialSource,
     ...getGoogleSheetCredentialStatus(),
-    legacyGoogleServiceAccountJsonIgnored: legacyServiceAccount.startsWith("{"),
+    googleServiceAccountJsonConfigured: hasLegacyGoogleServiceAccountJson(),
     sheetRetryEnabled: process.env.SHEET_RETRY_ENABLED !== "false",
   };
 };

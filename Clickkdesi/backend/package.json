@@ -8,7 +8,9 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "seed": "node seeders/productSeeder.js",
-    "upload:media": "node scripts/uploadCloudinaryMedia.js"
+    "upload:media": "node scripts/uploadCloudinaryMedia.js",
+    "verify:sheet": "node scripts/verifyGoogleSheets.js",
+    "sync:pending-sheets": "node scripts/syncPendingSheets.js"
   },
   "keywords": [],
   "author": "",
