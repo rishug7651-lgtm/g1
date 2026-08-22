@@ -84,7 +84,7 @@ export const productCatalog = [
   {
     name: "Gulaabo 2.0",
     mrp: 1399,
-    price: 749,
+    price: 748,
     category: "Full Sleeves",
     imagePublicId: productMediaPublicId("p15.jpg"),
     hoverImagePublicId: productMediaPublicId("p16.jpg"),
