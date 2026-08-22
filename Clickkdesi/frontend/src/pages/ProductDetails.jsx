@@ -4,11 +4,7 @@ import API from "../api/axios";
 import { useCart } from "../context/CartContext";
 import ResponsiveImage from "../components/ResponsiveImage";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  getPublicIdFromLegacySrc,
-  siteMediaCacheKeys,
-  siteMediaPublicIds,
-} from "../utils/cloudinary";
+import { getMediaPathFromLegacySrc, siteMediaPaths } from "../utils/media";
 
 const LOCAL_BACKEND_URL = "http://localhost:5000";
 const PRODUCTION_BACKEND_URL = "https://s4-backend-uyvz.onrender.com";
@@ -100,9 +96,9 @@ export default function ProductDetails() {
   };
 
   const mainImagePublicId =
-    product.imagePublicId || getPublicIdFromLegacySrc(product.image);
+    product.image || getMediaPathFromLegacySrc(product.imagePublicId);
   const backImagePublicId =
-    product.hoverImagePublicId || getPublicIdFromLegacySrc(product.hoverImage);
+    product.hoverImage || getMediaPathFromLegacySrc(product.hoverImagePublicId);
   const hasBackImage = Boolean(
     (product.hoverImage && product.hoverImage !== product.image) ||
       (backImagePublicId && backImagePublicId !== mainImagePublicId)
@@ -252,8 +248,7 @@ export default function ProductDetails() {
         <div className="mt-10">
           <h3 className="text-xl font-semibold mb-3">Size Chart</h3>
           <ResponsiveImage
-            publicId={siteMediaPublicIds.sizeChart}
-            cacheKey={siteMediaCacheKeys.sizeChart}
+            publicId={siteMediaPaths.sizeChart}
             alt="Size Chart"
             loading="lazy"
             sizes="(max-width: 768px) 100vw, 50vw"

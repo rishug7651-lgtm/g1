@@ -239,8 +239,22 @@ const sheetText = (val) => {
   return value;
 };
 
-const getIndiaTimestamp = () =>
-  new Date().toLocaleString("en-IN", {
+const toValidDate = (value) => {
+  if (!value) return null;
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const getOrderSheetTimestamp = (order) =>
+  toValidDate(order?.paidAt) ||
+  toValidDate(order?.createdAt) ||
+  toValidDate(order?.updatedAt) ||
+  new Date();
+
+const getIndiaTimestamp = (value = new Date()) =>
+  (toValidDate(value) || new Date()).toLocaleString("en-IN", {
     timeZone: "Asia/Kolkata",
     day: "2-digit",
     month: "short",
@@ -250,9 +264,9 @@ const getIndiaTimestamp = () =>
     second: "2-digit",
   });
 
-const getSafeDate = () => {
+const getSafeDate = (order) => {
   try {
-    return `'${getIndiaTimestamp()}`;
+    return `'${getIndiaTimestamp(getOrderSheetTimestamp(order))}`;
   } catch (err) {
     return `'${new Date().toISOString()}`;
   }
@@ -307,7 +321,7 @@ const buildMaskedOrderLog = (order) => ({
   addressPreview: addressPreview(order?.shippingAddress?.address),
   amount: order?.totalAmount || 0,
   paymentStatus: normalize(order?.paymentStatus),
-  dateTimeIst: getIndiaTimestamp(),
+  dateTimeIst: getIndiaTimestamp(getOrderSheetTimestamp(order)),
   products: productSummary(order?.products),
 });
 
@@ -327,7 +341,7 @@ const createRow = (order) => [
   sheetText(order?.couponCode),
   sheetText(order?.paymentStatus),
   sheetText(order?.paymentId),
-  getSafeDate(),
+  getSafeDate(order),
 ];
 
 const findRowIndexes = async (orderId) => {

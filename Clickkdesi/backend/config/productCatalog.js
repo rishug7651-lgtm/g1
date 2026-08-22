@@ -6,7 +6,7 @@ import {
   productMediaPublicId,
   siteMediaPublicIds,
   videoMediaPublicIds,
-} from "../../shared/cloudinaryConfig.js";
+} from "../../shared/mediaConfig.js";
 
 export {
   PRODUCT_MEDIA_FOLDER,

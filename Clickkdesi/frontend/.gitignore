@@ -12,7 +12,6 @@ node_modules
 dist
 dist-ssr
 *.local
-public/photos/
 public/video/
 
 # Editor directories and files

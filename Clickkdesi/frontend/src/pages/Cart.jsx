@@ -1,7 +1,7 @@
 import { useCart } from "../context/CartContext";
 import { Link } from "react-router-dom";
 import ResponsiveImage from "../components/ResponsiveImage";
-import { getPublicIdFromLegacySrc } from "../utils/cloudinary";
+import { getMediaPathFromLegacySrc } from "../utils/media";
 
 export default function Cart() {
 
@@ -45,7 +45,7 @@ export default function Cart() {
           <div className="flex gap-4 items-center">
 
             <ResponsiveImage
-              publicId={item.imagePublicId || getPublicIdFromLegacySrc(item.image)}
+              publicId={item.image || getMediaPathFromLegacySrc(item.imagePublicId)}
               src={item.image}
               alt={item.name}
               width="90"

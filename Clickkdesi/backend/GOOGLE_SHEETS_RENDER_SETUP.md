@@ -33,4 +33,10 @@
    npm run sync:pending-sheets
    ```
 
+10. If rows were already written with the wrong timestamp, resync existing paid rows:
+
+   ```bash
+   npm run resync:sheets
+   ```
+
 The automatic retry worker also runs every 15 minutes when `SHEET_RETRY_ENABLED=true`.

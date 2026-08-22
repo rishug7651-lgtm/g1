@@ -47,6 +47,7 @@ const orderSchema = new mongoose.Schema({
 
   razorpayOrderId: String,
   paymentId: String,
+  paidAt: Date,
 
   /* ================= ORDER FLOW ================= */
 

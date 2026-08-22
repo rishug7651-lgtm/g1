@@ -7,7 +7,7 @@ import {
 
 import { motion as Motion } from "framer-motion";
 import ResponsiveImage from "./ResponsiveImage";
-import { productMediaPublicId } from "../utils/cloudinary";
+import { productMediaPath } from "../utils/media";
 
 import "swiper/css";
 import "swiper/css/effect-fade";
@@ -18,13 +18,13 @@ export default function HeroCarousel() {
   const slides = [
     {
       type: "image",
-      publicId: productMediaPublicId("p1.jpg"),
+      publicId: productMediaPath("p1.jpg"),
       title: "Elegance Redefined",
       subtitle: "Designed for Modern Women"
     },
     {
       type: "image",
-      publicId: productMediaPublicId("p3.jpg"),
+      publicId: productMediaPath("p3.jpg"),
       title: "Clickkdesi Collection",
       subtitle: "Fashion That Speaks You"
     }

@@ -29,9 +29,7 @@ import {
 
 import { rateLimit } from "./middleware/rateLimit.js";
 import { requireAdminToken } from "./middleware/adminAuth.js";
-import { bandwidthLogger } from "./middleware/bandwidthLogger.js";
 import { legacyPhotoPublicIds } from "./config/productCatalog.js";
-import { getCloudinaryImageUrl } from "./utils/cloudinaryMedia.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -118,10 +116,6 @@ app.use(securityHeaders);
 
 app.use(compressionMiddleware);
 
-/* ================= BANDWIDTH LOGGING ================= */
-
-app.use(bandwidthLogger);
-
 /* ================= RATE LIMITERS ================= */
 
 const apiLimiter = rateLimit({
@@ -156,16 +150,12 @@ app.use("/product", shareLimiter, shareRouter);
 
 app.get("/photos/:filename", photoLimiter, (req, res) => {
   const publicId = legacyPhotoPublicIds[req.params.filename];
-  const redirectUrl = getCloudinaryImageUrl(publicId, {
-    width: 1200,
-    quality: "auto",
-    format: "auto",
-  });
+  const redirectUrl = `${(process.env.PUBLIC_FRONTEND_URL || "https://clickkdesistore.in").replace(/\/$/, "")}${publicId}`;
 
   if (!redirectUrl) {
     return res.status(410).json({
       success: false,
-      message: "Media moved to Cloudinary",
+      message: "Media not found",
     });
   }
 

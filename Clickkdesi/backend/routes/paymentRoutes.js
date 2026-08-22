@@ -100,6 +100,9 @@ router.post(
         const { order } = await fulfillPaidOrder({
           razorpayOrderId: payment.order_id,
           paymentId: payment.id,
+          paidAt: payment.created_at
+            ? new Date(payment.created_at * 1000)
+            : undefined,
           source: "webhook",
         });
 

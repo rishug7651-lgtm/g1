@@ -2,8 +2,7 @@ import crypto from "crypto";
 import express from "express";
 import Product from "../models/Product.js";
 import { publicCache } from "../middleware/responseOptimization.js";
-import { legacyPhotoPublicIds } from "../config/productCatalog.js";
-import { getCloudinaryImageUrl } from "../utils/cloudinaryMedia.js";
+import { getMediaPath } from "../utils/media.js";
 
 const router = express.Router();
 
@@ -15,7 +14,6 @@ const LIST_FIELDS =
   "name price mrp image imagePublicId hoverImage hoverImagePublicId imageAlt category updatedAt";
 const DETAIL_FIELDS =
   "name price mrp image imagePublicId hoverImage hoverImagePublicId imageAlt description category updatedAt";
-const ONRENDER_PHOTO_RE = /^https:\/\/[^/]+\.onrender\.com\/photos\//i;
 
 const responseCache = new Map();
 
@@ -49,38 +47,17 @@ const escapeHtml = (value) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
-const inferPublicIdFromLegacyUrl = (url) => {
-  if (!url) return "";
-
-  try {
-    const parsed = new URL(url, "https://placeholder.local");
-    const fileName = parsed.pathname.split("/").pop();
-    return legacyPhotoPublicIds[fileName] || "";
-  } catch {
-    return "";
-  }
-};
-
-const stripRenderAssetUrl = (url) => {
-  if (!url || ONRENDER_PHOTO_RE.test(url)) return undefined;
-  return url;
-};
-
 const serializeProduct = (product) => {
-  const imagePublicId =
-    product.imagePublicId || inferPublicIdFromLegacyUrl(product.image);
-  const hoverImagePublicId =
-    product.hoverImagePublicId ||
-    inferPublicIdFromLegacyUrl(product.hoverImage) ||
-    imagePublicId;
+  const image = getMediaPath(product.image || product.imagePublicId);
+  const hoverImage = getMediaPath(product.hoverImage || product.hoverImagePublicId) || image;
 
   return {
     ...product,
-    imagePublicId,
-    hoverImagePublicId,
     imageAlt: product.imageAlt || product.name,
-    image: stripRenderAssetUrl(product.image),
-    hoverImage: stripRenderAssetUrl(product.hoverImage),
+    image,
+    hoverImage,
+    imagePublicId: undefined,
+    hoverImagePublicId: undefined,
   };
 };
 
@@ -159,14 +136,9 @@ router.get("/share/:id", publicCache(60 * 10), async (req, res) => {
       safeProduct.description,
       "Best product available"
     ).slice(0, 160);
-    const image =
-      getCloudinaryImageUrl(safeProduct.imagePublicId, {
-        width: 1200,
-        height: 630,
-        crop: "fill",
-      }) ||
-      safeProduct.image ||
-      "https://via.placeholder.com/1200x630";
+    const image = safeProduct.image
+      ? `${frontendURL}${safeProduct.image}`
+      : "https://via.placeholder.com/1200x630";
     const productUrl = `${frontendURL}/product/${safeProduct._id}`;
     const shareUrl = `${backendURL}/api/products/share/${safeProduct._id}`;
 

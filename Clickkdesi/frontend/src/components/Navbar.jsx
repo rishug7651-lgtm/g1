@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useState } from "react";
 import ResponsiveImage from "./ResponsiveImage";
-import { siteMediaPublicIds } from "../utils/cloudinary";
+import { siteMediaPaths } from "../utils/media";
 
 export default function Navbar() {
 
@@ -52,7 +52,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-3">
 
             <ResponsiveImage
-              publicId={siteMediaPublicIds.logo}
+              publicId={siteMediaPaths.logo}
               alt="Clickkdesi"
               widths={[64, 96, 120]}
               sizes="96px"

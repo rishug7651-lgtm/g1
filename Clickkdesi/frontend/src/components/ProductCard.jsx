@@ -4,7 +4,7 @@ import { motion as Motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import ResponsiveImage from "./ResponsiveImage";
-import { getPublicIdFromLegacySrc } from "../utils/cloudinary";
+import { getMediaPathFromLegacySrc } from "../utils/media";
 
 export default function ProductCard({
   product,
@@ -16,9 +16,9 @@ export default function ProductCard({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const mainImagePublicId =
-    product?.imagePublicId || getPublicIdFromLegacySrc(product?.image);
+    product?.image || getMediaPathFromLegacySrc(product?.imagePublicId);
   const backImagePublicId =
-    product?.hoverImagePublicId || getPublicIdFromLegacySrc(product?.hoverImage);
+    product?.hoverImage || getMediaPathFromLegacySrc(product?.hoverImagePublicId);
   const hasBackImage = Boolean(
     (product?.hoverImage && product.hoverImage !== product.image) ||
       (backImagePublicId && backImagePublicId !== mainImagePublicId)

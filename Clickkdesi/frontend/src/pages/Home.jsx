@@ -4,7 +4,7 @@ import { getProducts } from "../api/products";
 import HeroCarousel from "../components/HeroCarousel";
 import ProductCard from "../components/ProductCard";
 import ResponsiveImage from "../components/ResponsiveImage";
-import { siteMediaPublicIds } from "../utils/cloudinary";
+import { siteMediaPaths } from "../utils/media";
 
 import { Link } from "react-router-dom";
 
@@ -23,8 +23,8 @@ function DiscountBanner() {
 function Categories() {
 
   const categories = [
-    { name: "Full Sleeves", publicId: siteMediaPublicIds.categoryFullSleeves },
-    { name: "Sleeveless", publicId: siteMediaPublicIds.categorySleeveless }
+    { name: "Full Sleeves", publicId: siteMediaPaths.categoryFullSleeves },
+    { name: "Sleeveless", publicId: siteMediaPaths.categorySleeveless }
   ];
 
   return (

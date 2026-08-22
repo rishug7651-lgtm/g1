@@ -1,8 +1,7 @@
 import express from "express";
 import Product from "../models/Product.js";
 import { publicCache } from "../middleware/responseOptimization.js";
-import { legacyPhotoPublicIds } from "../config/productCatalog.js";
-import { getCloudinaryImageUrl } from "../utils/cloudinaryMedia.js";
+import { getMediaPath } from "../utils/media.js";
 
 const router = express.Router();
 
@@ -28,18 +27,6 @@ const cleanText = (value, fallback = "") =>
     .replace(/\s+/g, " ")
     .trim();
 
-const getPublicIdFromLegacyUrl = (url) => {
-  if (!url) return "";
-
-  try {
-    const parsed = new URL(url, "https://placeholder.local");
-    const fileName = parsed.pathname.split("/").pop();
-    return legacyPhotoPublicIds[fileName] || "";
-  } catch {
-    return "";
-  }
-};
-
 router.get("/:id", publicCache(60 * 10), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
@@ -48,16 +35,8 @@ router.get("/:id", publicCache(60 * 10), async (req, res) => {
 
     if (!product) return res.status(404).send("Product not found");
 
-    const imagePublicId =
-      product.imagePublicId || getPublicIdFromLegacyUrl(product.image);
-    const image =
-      getCloudinaryImageUrl(imagePublicId, {
-        width: 1200,
-        height: 630,
-        crop: "fill",
-      }) ||
-      product.image ||
-      "https://via.placeholder.com/1200x630";
+    const imagePath = getMediaPath(product.image || product.imagePublicId);
+    const image = imagePath ? `${frontendURL}${imagePath}` : "https://via.placeholder.com/1200x630";
     const description = cleanText(product.description, "Best product available").slice(0, 160);
     const name = cleanText(`${product.name} - Premium Cotton Wear for Daily Comfort`);
     const productUrl = `${frontendURL}/product/${product._id}`;

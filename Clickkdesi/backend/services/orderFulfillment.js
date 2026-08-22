@@ -9,6 +9,14 @@ import { syncOrderToSheetOnce } from "../utils/sheetSync.js";
 
 const fulfillmentLocks = new Map();
 
+const toValidDate = (value) => {
+  if (!value) return null;
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
 export const buildOrderSummary = (order) => ({
   _id: order._id,
   products: order.products?.map((product) => ({
@@ -72,6 +80,7 @@ const fulfillPaidOrderOnce = async ({
   orderId,
   razorpayOrderId,
   paymentId,
+  paidAt,
   source = "payment",
 }) => {
   const query = orderId ? { _id: orderId } : { razorpayOrderId };
@@ -82,10 +91,12 @@ const fulfillPaidOrderOnce = async ({
   }
 
   let changed = false;
+  const paymentTimestamp = toValidDate(paidAt) || new Date();
 
   if (order.paymentStatus !== "paid") {
     order.paymentStatus = "paid";
     order.orderStatus = "confirmed";
+    order.paidAt = paymentTimestamp;
     changed = true;
   }
 
