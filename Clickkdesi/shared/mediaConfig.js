@@ -7,7 +7,7 @@ export const siteMediaPaths = {
   logo: "/photos/logo.jpg",
   categoryFullSleeves: "/photos/c1.jpg",
   categorySleeveless: "/photos/c2.jpg",
-  sizeChart: "/photos/sc.jpeg",
+  sizeChart: "/photos/sc.jpg",
 };
 
 export const legacyPhotoPaths = {
