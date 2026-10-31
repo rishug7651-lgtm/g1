@@ -1,2 +1,8 @@
 Clickkdesi/media-source/
 .codex-tools/
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/.env
+**/.env.*
+!**/.env.example

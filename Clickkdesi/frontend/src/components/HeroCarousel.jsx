@@ -92,6 +92,7 @@ export default function HeroCarousel() {
                     publicId={slide.publicId}
                     alt={slide.title}
                     loading={i === 0 ? "eager" : "lazy"}
+                    fetchPriority={i === 0 ? "high" : "auto"}
                     className="w-full h-full object-cover"
                     sizes="100vw"
                     widths={[640, 960]}

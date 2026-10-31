@@ -1,6 +1,11 @@
-import { getMediaPath, getMediaPathFromLegacySrc, imagePlaceholder } from "../utils/media";
+import {
+  getMediaPath,
+  getMediaPathFromLegacySrc,
+  getResponsiveMedia,
+  imagePlaceholder,
+} from "../utils/media";
 
-const DEFAULT_WIDTHS = [320, 480, 640, 800, 960, 1200];
+const DEFAULT_WIDTHS = [160, 320, 640, 960];
 
 export default function ResponsiveImage({
   publicId,
@@ -18,18 +23,23 @@ export default function ResponsiveImage({
   className = "",
   loading = "lazy",
   decoding = "async",
+  fetchPriority,
   ...props
 }) {
   const optimizedSrc = getMediaPath(publicId) || getMediaPathFromLegacySrc(src) || src || imagePlaceholder;
+  const responsiveMedia = getResponsiveMedia(optimizedSrc, widths);
 
   return (
     <img
-      src={optimizedSrc}
+      src={responsiveMedia.src || optimizedSrc}
+      srcSet={responsiveMedia.srcSet}
+      sizes={responsiveMedia.srcSet ? sizes : undefined}
       alt={alt || ""}
       width={width}
       height={height}
       loading={loading}
       decoding={decoding}
+      fetchPriority={fetchPriority}
       className={className}
       {...props}
     />

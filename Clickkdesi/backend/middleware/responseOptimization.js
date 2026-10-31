@@ -20,6 +20,31 @@ const appendVary = (res, value) => {
   }
 };
 
+const encodingQuality = (acceptEncoding, requestedEncoding) => {
+  const qualities = new Map();
+
+  for (const entry of String(acceptEncoding || "").split(",")) {
+    const [name, ...parameters] = entry.trim().toLowerCase().split(";");
+    if (!name) continue;
+
+    const qualityParameter = parameters.find((parameter) =>
+      parameter.trim().startsWith("q=")
+    );
+    const parsedQuality = qualityParameter
+      ? Number(qualityParameter.trim().slice(2))
+      : 1;
+    qualities.set(name, Number.isFinite(parsedQuality)
+      ? Math.max(0, Math.min(parsedQuality, 1))
+      : 0);
+  }
+
+  if (qualities.has(requestedEncoding)) {
+    return qualities.get(requestedEncoding);
+  }
+
+  return qualities.get("*") || 0;
+};
+
 export const compressionMiddleware = (req, res, next) => {
   const send = res.send.bind(res);
 
@@ -34,10 +59,12 @@ export const compressionMiddleware = (req, res, next) => {
       return send(body);
     }
 
-    const acceptEncoding = String(req.headers["accept-encoding"] || "");
-    const encoding = acceptEncoding.includes("br")
+    const acceptEncoding = req.headers["accept-encoding"] || "";
+    const brotliQuality = encodingQuality(acceptEncoding, "br");
+    const gzipQuality = encodingQuality(acceptEncoding, "gzip");
+    const encoding = brotliQuality > 0 && brotliQuality >= gzipQuality
       ? "br"
-      : acceptEncoding.includes("gzip")
+      : gzipQuality > 0
         ? "gzip"
         : "";
 
