@@ -17,7 +17,7 @@ const DETAIL_FIELDS =
 
 const responseCache = new Map();
 
-const backendURL = (process.env.PUBLIC_BACKEND_URL || "https://s4-backend-uyvz.onrender.com").replace(
+const backendURL = (process.env.PUBLIC_BACKEND_URL || "https://g1-x5ol.onrender.com").replace(
   /\/$/,
   ""
 );

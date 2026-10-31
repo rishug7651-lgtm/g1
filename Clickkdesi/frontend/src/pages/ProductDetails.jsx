@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getMediaPathFromLegacySrc, siteMediaPaths } from "../utils/media";
 
 const LOCAL_BACKEND_URL = "http://localhost:5000";
-const PRODUCTION_BACKEND_URL = "https://s4-backend-uyvz.onrender.com";
+const PRODUCTION_BACKEND_URL = "https://g1-x5ol.onrender.com";
 
 const shareBaseURL = (
   import.meta.env.VITE_PUBLIC_BACKEND_URL ||

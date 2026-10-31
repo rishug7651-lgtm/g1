@@ -47,11 +47,11 @@ services:
       - key: CLOUDINARY_CLOUD_NAME
         value: dje6kqbmm
       - key: CORS_ORIGINS
-        value: https://clickkdesistore.in,https://www.clickkdesistore.in,https://s4-zdqq.onrender.com
+        value: https://clickkdesistore.in,https://www.clickkdesistore.in,https://g1-1-ph8w.onrender.com
       - key: PUBLIC_FRONTEND_URL
         value: https://clickkdesistore.in
       - key: PUBLIC_BACKEND_URL
-        value: https://s4-backend-uyvz.onrender.com
+        value: https://g1-x5ol.onrender.com
 
   - type: web
     name: clickkdesi-frontend
@@ -75,9 +75,9 @@ services:
         value: public, max-age=300
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://s4-backend-uyvz.onrender.com/api
+        value: https://g1-x5ol.onrender.com/api
       - key: VITE_PUBLIC_BACKEND_URL
-        value: https://s4-backend-uyvz.onrender.com
+        value: https://g1-x5ol.onrender.com
       - key: VITE_CLOUDINARY_CLOUD_NAME
         value: dje6kqbmm
       - key: VITE_RAZORPAY_KEY
